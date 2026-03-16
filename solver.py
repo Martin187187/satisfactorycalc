@@ -10,6 +10,7 @@ from load_data import load_model, Item, Recipe
 
 
 EPS = 1e-9
+POWER_ITEM = "__POWER_MJ__"
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +38,7 @@ def parse_supply_args(values: list[str]) -> dict[str, float]:
     Parse CLI values like:
         Desc_OreIron_C=10000
         Desc_OreCopper_C=2500
+        __POWER_MJ__=500000
     """
     supplies: dict[str, float] = {}
     for raw in values:
@@ -56,16 +58,59 @@ def parse_supply_args(values: list[str]) -> dict[str, float]:
     return supplies
 
 
+def pick_primary_building(recipe: Recipe):
+    """
+    Prefer real factory buildings over workshop/workbench helper components.
+    """
+    buildings = getattr(recipe, "produced_in_buildings", ()) or ()
+    if not buildings:
+        return None
+
+    for b in buildings:
+        if getattr(b, "class_name", "").startswith("Build_") or getattr(b, "class_name", "") == "POWER":
+            return b
+
+    return buildings[0]
+
+
+def recipe_power_net_mj(recipe: Recipe) -> float:
+    """
+    Net batch energy contribution of one recipe run in MJ.
+
+    Positive  => produces energy
+    Negative  => consumes energy
+
+    Building power is MW = MJ/s, so:
+        energy_per_run_mj = power_mw * duration_s
+
+    Normal manufacturers have positive power consumption -> negative net energy.
+    Generators have negative power consumption -> positive net energy.
+    """
+    building = pick_primary_building(recipe)
+    if building is None:
+        return 0.0
+
+    power_mw = float(getattr(building, "power_consumption", 0.0) or 0.0)
+    duration_s = float(getattr(recipe, "duration_s", 0.0) or 0.0)
+
+    # Resource net convention:
+    # positive => produced
+    # negative => consumed
+    return -(power_mw * duration_s)
+
+
 def build_item_maps(items: list[Item], recipes: list[Recipe], base_supplies: dict[str, float]):
     """
     Build:
       - items_by_class
       - full item set including items only mentioned in recipes/supplies
+      - synthetic POWER_ITEM for energy accounting
     """
     items_by_class: dict[str, Item] = {it.class_name: it for it in items}
 
     all_item_classes = set(items_by_class.keys())
     all_item_classes.update(base_supplies.keys())
+    all_item_classes.add(POWER_ITEM)
 
     for rec in recipes:
         for cls, _ in rec.ingredients:
@@ -73,11 +118,15 @@ def build_item_maps(items: list[Item], recipes: list[Recipe], base_supplies: dic
         for cls, _ in rec.products:
             all_item_classes.add(cls)
 
+        power_net_mj = recipe_power_net_mj(rec)
+        if abs(power_net_mj) > EPS:
+            all_item_classes.add(POWER_ITEM)
+
     for cls in all_item_classes:
         if cls not in items_by_class:
             items_by_class[cls] = Item(
                 class_name=cls,
-                name=cls,
+                name="Power (MJ)" if cls == POWER_ITEM else cls,
                 sink_points=0,
             )
 
@@ -89,6 +138,8 @@ def recipe_net_map(recipe: Recipe) -> dict[str, float]:
     Net production per single recipe execution:
       positive => produced
       negative => consumed
+
+    Includes synthetic POWER_ITEM in MJ.
     """
     net: dict[str, float] = {}
 
@@ -97,6 +148,10 @@ def recipe_net_map(recipe: Recipe) -> dict[str, float]:
 
     for cls, amt in recipe.ingredients:
         net[cls] = net.get(cls, 0.0) - float(amt)
+
+    power_net_mj = recipe_power_net_mj(recipe)
+    if abs(power_net_mj) > EPS:
+        net[POWER_ITEM] = net.get(POWER_ITEM, 0.0) + power_net_mj
 
     return net
 
@@ -191,6 +246,7 @@ def compute_leftovers(
 ) -> dict[str, float]:
     """
     leftover[item] = base + produced - consumed - sunk
+    Includes POWER_ITEM.
     """
     leftovers: dict[str, float] = dict(base_supplies)
 
@@ -198,10 +254,16 @@ def compute_leftovers(
 
     for recipe_class, runs in recipe_runs.items():
         rec = recipe_by_class[recipe_class]
+
         for cls, amt in rec.ingredients:
             leftovers[cls] = leftovers.get(cls, 0.0) - amt * runs
+
         for cls, amt in rec.products:
             leftovers[cls] = leftovers.get(cls, 0.0) + amt * runs
+
+        power_net_mj = recipe_power_net_mj(rec)
+        if abs(power_net_mj) > EPS:
+            leftovers[POWER_ITEM] = leftovers.get(POWER_ITEM, 0.0) + power_net_mj * runs
 
     for cls, amt in sunk_items.items():
         leftovers[cls] = leftovers.get(cls, 0.0) - amt
@@ -215,32 +277,22 @@ def pretty_amount(x: float) -> str:
     return f"{x:.6f}".rstrip("0").rstrip(".")
 
 
-def pick_primary_building(recipe: Recipe):
-    """
-    Prefer real factory buildings over workshop/workbench helper components.
-    """
-    buildings = getattr(recipe, "produced_in_buildings", ()) or ()
-    if not buildings:
-        return None
-
-    for b in buildings:
-        if getattr(b, "class_name", "").startswith("Build_"):
-            return b
-
-    return buildings[0]
-
-
 def compute_recipe_energy_stats(
     recipes: list[Recipe],
     recipe_runs: dict[str, float],
 ) -> list[RecipeEnergyStat]:
     """
     Batch-energy estimate:
-      energy_per_run_mj = building_power_mw * duration_s
+      energy_per_run_mj = abs(building_power_mw * duration_s)
 
-    Since 1 MW = 1 MJ/s, multiplying by seconds gives MJ.
+    For display:
+      - power_mw remains signed
+      - energy_per_run_mj is always non-negative magnitude
+      - total_energy_mj is always non-negative magnitude
 
-    This is meaningful for a finite batch LP.
+    Sign of production/consumption is implied by power_mw:
+      power_mw > 0 => consumer
+      power_mw < 0 => producer
     """
     recipe_by_class = {r.class_name: r for r in recipes}
     stats: list[RecipeEnergyStat] = []
@@ -255,7 +307,7 @@ def compute_recipe_energy_stats(
         power_mw = float(getattr(building, "power_consumption", 0.0) or 0.0)
         duration_s = float(getattr(rec, "duration_s", 0.0) or 0.0)
 
-        energy_per_run_mj = power_mw * duration_s
+        energy_per_run_mj = abs(power_mw * duration_s)
         total_energy_mj = energy_per_run_mj * runs
 
         stats.append(
@@ -286,6 +338,12 @@ def print_summary(
     show_power_limit: int,
 ) -> None:
     items_by_class = {it.class_name: it for it in items}
+    if POWER_ITEM not in items_by_class:
+        items_by_class[POWER_ITEM] = Item(
+            class_name=POWER_ITEM,
+            name="Power (MJ)",
+            sink_points=0,
+        )
 
     print("=== OPTIMAL SOLUTION ===")
     print(f"Total sink score: {result.total_score:.3f}")
@@ -330,23 +388,39 @@ def print_summary(
     energy_stats = compute_recipe_energy_stats(recipes, result.recipe_runs)
 
     if energy_stats:
-        total_energy_mj = sum(x.total_energy_mj for x in energy_stats)
-        total_energy_mwh = total_energy_mj / 3600.0
-        total_nominal_power_mw = sum(x.power_mw for x in energy_stats if x.runs > 1e-7)
+        consuming_stats = [x for x in energy_stats if x.power_mw > EPS]
+        producing_stats = [x for x in energy_stats if x.power_mw < -EPS]
+
+        total_consumed_mj = sum(x.total_energy_mj for x in consuming_stats)
+        total_produced_mj = sum(x.total_energy_mj for x in producing_stats)
+        net_leftover_power_mj = compute_leftovers(
+            recipes=recipes,
+            recipe_runs=result.recipe_runs,
+            base_supplies=base_supplies,
+            sunk_items=result.sunk_items,
+        ).get(POWER_ITEM, 0.0)
+
+        total_consumer_nominal_power_mw = sum(x.power_mw for x in consuming_stats if x.runs > 1e-7)
+        total_generator_nominal_power_mw = sum(-x.power_mw for x in producing_stats if x.runs > 1e-7)
 
         print("=== Power / Energy Summary ===")
         print(f"Recipes with resolved building power: {len(energy_stats)}")
-        print(f"Total nominal machine power:         {total_nominal_power_mw:.3f} MW")
-        print(f"Total batch energy:                  {total_energy_mj:.3f} MJ")
-        print(f"Total batch energy:                  {total_energy_mwh:.6f} MWh")
+        print(f"Total nominal consumer power:        {total_consumer_nominal_power_mw:.3f} MW")
+        print(f"Total nominal generator power:       {total_generator_nominal_power_mw:.3f} MW")
+        print(f"Total energy consumed:               {total_consumed_mj:.3f} MJ")
+        print(f"Total energy produced:               {total_produced_mj:.3f} MJ")
+        print(f"Net leftover energy:                 {net_leftover_power_mj:.3f} MJ")
+        print(f"Net leftover energy:                 {net_leftover_power_mj / 3600.0:.6f} MWh")
         print()
 
         print(f"=== Recipe Energy Usage (top {show_power_limit}) ===")
         energy_sorted = sorted(energy_stats, key=lambda x: (-x.total_energy_mj, x.recipe_class))
         for s in energy_sorted[:show_power_limit]:
+            role = "producer" if s.power_mw < 0 else "consumer"
             print(
                 f"{s.recipe_name} ({s.recipe_class})\n"
                 f"  building:        {s.building_name} ({s.building_class})\n"
+                f"  role:            {role}\n"
                 f"  runs:            {pretty_amount(s.runs)}\n"
                 f"  power:           {s.power_mw:.3f} MW\n"
                 f"  duration/run:    {s.duration_s:.3f} s\n"
@@ -368,7 +442,11 @@ def print_summary(
         for cls, amt in leftover_sorted[:show_leftover_limit]:
             item = items_by_class.get(cls)
             name = item.name if item else cls
-            print(f"{name} ({cls}): leftover={pretty_amount(amt)}")
+
+            if cls == POWER_ITEM:
+                print(f"{name} ({cls}): leftover={amt:.3f} MJ ({amt / 3600.0:.6f} MWh)")
+            else:
+                print(f"{name} ({cls}): leftover={pretty_amount(amt)}")
         print()
 
 
@@ -384,6 +462,11 @@ def filter_valid_recipes_from_base(
     Reachability starts from the keys of base_supplies.
 
     This is a structural filter, not a quantitative one.
+
+    POWER_ITEM is treated specially:
+      - if a recipe consumes POWER_ITEM, that does NOT make it unreachable by itself,
+        because power may be produced by other reachable recipes
+      - if a recipe produces POWER_ITEM, it is judged by its non-power ingredients only
     """
     reachable_items = {cls for cls, amt in base_supplies.items() if amt > 0}
     valid_recipes: list[Recipe] = []
@@ -399,7 +482,7 @@ def filter_valid_recipes_from_base(
                 next_remaining.append(rec)
                 continue
 
-            ingredient_classes = {cls for cls, _amt in rec.ingredients}
+            ingredient_classes = {cls for cls, _amt in rec.ingredients if cls != POWER_ITEM}
 
             if ingredient_classes.issubset(reachable_items):
                 valid_recipes.append(rec)
@@ -407,6 +490,13 @@ def filter_valid_recipes_from_base(
                     if cls not in reachable_items:
                         reachable_items.add(cls)
                         changed = True
+
+                # If this recipe has a power contribution, mark POWER_ITEM as structurally reachable.
+                power_net_mj = recipe_power_net_mj(rec)
+                if abs(power_net_mj) > EPS and POWER_ITEM not in reachable_items:
+                    reachable_items.add(POWER_ITEM)
+                    changed = True
+
                 changed = True
             else:
                 next_remaining.append(rec)
@@ -416,9 +506,16 @@ def filter_valid_recipes_from_base(
     return valid_recipes
 
 
+def merge_supplies(defaults: dict[str, float], overrides: dict[str, float]) -> dict[str, float]:
+    merged = dict(defaults)
+    for k, v in overrides.items():
+        merged[k] = merged.get(k, 0.0) + v
+    return merged
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Maximize Satisfactory sink score from base ingredients using LP."
+        description="Maximize Satisfactory sink score from base ingredients using LP, including power as a produced/consumed resource."
     )
     parser.add_argument(
         "json_path",
@@ -427,36 +524,43 @@ def main() -> None:
     parser.add_argument(
         "supplies",
         nargs="*",
-        help='Base supplies like Desc_OreIron_C=10000 Desc_OreCopper_C=5000',
+        help='Extra base supplies like Desc_OreIron_C=10000 Desc_OreCopper_C=5000 __POWER_MJ__=100000',
     )
     parser.add_argument(
         "--top-recipes",
         type=int,
-        default=300,
+        default=10,
         help="How many recipe usages to print",
     )
     parser.add_argument(
         "--top-sinks",
         type=int,
-        default=300,
+        default=10,
         help="How many sunk items to print",
     )
     parser.add_argument(
         "--top-leftovers",
         type=int,
-        default=300,
+        default=10,
         help="How many leftovers to print",
     )
     parser.add_argument(
         "--top-power",
         type=int,
-        default=100,
+        default=10,
         help="How many recipe energy rows to print",
+    )
+    parser.add_argument(
+        "--ignore-default-supplies",
+        action="store_true",
+        help="Ignore the built-in base supply preset and only use supplies passed on the CLI",
     )
 
     args = parser.parse_args()
 
-    base_supplies = {
+    cli_supplies = parse_supply_args(args.supplies)
+
+    default_base_supplies = {
         "Desc_OreIron_C": 92100,
         "Desc_Water_C": 100000000,
         "Desc_OreCopper_C": 36900,
@@ -470,7 +574,14 @@ def main() -> None:
         "Desc_OreBauxite_C": 12300,
         "Desc_SAM_C": 10200,
         "Desc_OreUranium_C": 2100,
+        POWER_ITEM: 0.0,
     }
+
+    if args.ignore_default_supplies:
+        base_supplies = cli_supplies
+        base_supplies.setdefault(POWER_ITEM, 0.0)
+    else:
+        base_supplies = merge_supplies(default_base_supplies, cli_supplies)
 
     # load_model now returns 4 values
     items, recipes, _recipes_by_product, _buildings_by_class = load_model(args.json_path)
@@ -485,6 +596,7 @@ def main() -> None:
     print(f"Loaded recipes:          {len(recipes)}")
     print(f"Reachable valid recipes: {len(filtered_recipes)}")
     print(f"Base supplies:           {len(base_supplies)} item types")
+    print(f"Power item key:          {POWER_ITEM}")
     print()
 
     if not base_supplies:

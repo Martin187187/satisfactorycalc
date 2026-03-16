@@ -68,6 +68,7 @@ class Item:
 class Building:
     class_name: str
     name: str
+    native_class: str
     power_consumption: float
     power_consumption_exponent: float
     production_shard_slot_size: int
@@ -110,6 +111,18 @@ def parse_item_list(s: str) -> tuple[tuple[str, float], ...]:
     return tuple(pairs)
 
 
+def normalize_item_pairs(
+    pairs: list[tuple[str, float]] | tuple[tuple[str, float], ...] | None,
+) -> tuple[tuple[str, float], ...]:
+    if not pairs:
+        return ()
+
+    result: list[tuple[str, float]] = []
+    for item_class, amount in pairs:
+        result.append((item_class, float(amount)))
+    return tuple(result)
+
+
 def parse_class_refs(s: str) -> tuple[str, ...]:
     """
     Parse strings like:
@@ -127,6 +140,21 @@ def parse_class_refs(s: str) -> tuple[str, ...]:
     seen = set()
     result: list[str] = []
     for cls in found:
+        if cls not in seen:
+            seen.add(cls)
+            result.append(cls)
+    return tuple(result)
+
+
+def normalize_class_refs(
+    refs: list[str] | tuple[str, ...] | None,
+) -> tuple[str, ...]:
+    if not refs:
+        return ()
+
+    seen = set()
+    result: list[str] = []
+    for cls in refs:
         if cls not in seen:
             seen.add(cls)
             result.append(cls)
@@ -168,17 +196,19 @@ def load_json_any_encoding(path: str):
     return orjson.loads(text)
 
 
-def extract_all_classes(data: list[dict]) -> dict[str, dict]:
+def extract_all_classes(data: list[dict]) -> tuple[dict[str, dict], dict[str, str]]:
     """
     Build a lookup of every class record by ClassName, regardless of NativeClass.
     This is the important step that lets recipes resolve buildings from other sections.
     """
     all_classes_by_name: dict[str, dict] = {}
+    native_class_by_name: dict[str, str] = {}
 
     for group in data:
         if not isinstance(group, dict):
             continue
 
+        native_class = group.get("NativeClass", "") or ""
         classes = group.get("Classes", [])
         if not isinstance(classes, list):
             continue
@@ -192,11 +222,15 @@ def extract_all_classes(data: list[dict]) -> dict[str, dict]:
                 continue
 
             all_classes_by_name[class_name] = cls
+            native_class_by_name[class_name] = native_class
 
-    return all_classes_by_name
+    return all_classes_by_name, native_class_by_name
 
 
-def build_building_lookup(all_classes_by_name: dict[str, dict]) -> dict[str, Building]:
+def build_building_lookup(
+    all_classes_by_name: dict[str, dict],
+    native_class_by_name: dict[str, str],
+) -> dict[str, Building]:
     """
     Convert every class record that looks like a production-capable buildable/workbench
     into a Building. We do not depend on a single NativeClass here.
@@ -205,7 +239,6 @@ def build_building_lookup(all_classes_by_name: dict[str, dict]) -> dict[str, Bui
 
     for class_name, raw in all_classes_by_name.items():
         # Only keep classes that appear to be usable crafting buildings/components.
-        # This heuristic is broad on purpose so workshop/workbench components are also picked up.
         has_relevant_fields = any(
             key in raw
             for key in (
@@ -223,6 +256,7 @@ def build_building_lookup(all_classes_by_name: dict[str, dict]) -> dict[str, Bui
         buildings[class_name] = Building(
             class_name=class_name,
             name=raw.get("mDisplayName", class_name),
+            native_class=native_class_by_name.get(class_name, ""),
             power_consumption=to_float(raw.get("mPowerConsumption", "0")),
             power_consumption_exponent=to_float(raw.get("mPowerConsumptionExponent", "0")),
             production_shard_slot_size=to_int(raw.get("mProductionShardSlotSize", "0")),
@@ -232,18 +266,79 @@ def build_building_lookup(all_classes_by_name: dict[str, dict]) -> dict[str, Bui
     return buildings
 
 
-def load_model(path: str):
+def make_building_from_custom(raw: dict) -> Building:
+    return Building(
+        class_name=raw["ClassName"],
+        name=raw.get("mDisplayName", raw["ClassName"]),
+        native_class=raw.get(
+            "NativeClass",
+            "/Script/CoreUObject.Class'/Script/FactoryGame.FGBuildableManufacturer'",
+        ),
+        power_consumption=to_float(raw.get("mPowerConsumption", 0.0)),
+        power_consumption_exponent=to_float(raw.get("mPowerConsumptionExponent", 1.0)),
+        production_shard_slot_size=to_int(raw.get("mProductionShardSlotSize", 0)),
+        production_shard_boost_multiplier=to_float(raw.get("mProductionShardBoostMultiplier", 1.0)),
+    )
+
+
+def make_item_from_custom(raw: dict) -> Item:
+    class_name = raw["ClassName"]
+    sink_points = to_int(raw.get("mResourceSinkPoints", 0))
+    sink_points = SINK_POINT_OVERRIDES.get(class_name, sink_points)
+
+    return Item(
+        class_name=class_name,
+        name=raw.get("mDisplayName", class_name),
+        sink_points=sink_points,
+    )
+
+
+def make_recipe_from_custom(raw: dict, buildings_by_class: dict[str, Building]) -> Recipe:
+    class_name = raw["ClassName"]
+
+    produced_in_classes = normalize_class_refs(raw.get("mProducedIn"))
+
+    resolved_buildings = tuple(
+        buildings_by_class[bcls]
+        for bcls in produced_in_classes
+        if bcls in buildings_by_class
+    )
+
+    return Recipe(
+        class_name=class_name,
+        name=raw.get("mDisplayName", class_name),
+        duration_s=to_float(raw.get("mManufactoringDuration", 0.0)),
+        ingredients=normalize_item_pairs(raw.get("mIngredients")),
+        products=normalize_item_pairs(raw.get("mProduct")),
+        produced_in=produced_in_classes,
+        produced_in_buildings=resolved_buildings,
+    )
+
+
+def load_model(
+    path: str
+):
     data = load_json_any_encoding(path)
 
     if not isinstance(data, list):
         raise TypeError(f"Expected top-level JSON array, got {type(data).__name__}")
 
-    all_classes_by_name = extract_all_classes(data)
-    buildings_by_class = build_building_lookup(all_classes_by_name)
+    custom_items = CUSTOM_ITEMS
+    custom_buildings = CUSTOM_BUILDINGS
+    custom_recipes = CUSTOM_RECIPES
+
+    all_classes_by_name, native_class_by_name = extract_all_classes(data)
+    buildings_by_class = build_building_lookup(all_classes_by_name, native_class_by_name)
+
+    # Add / override custom buildings first so recipes can resolve them
+    for raw in custom_buildings:
+        building = make_building_from_custom(raw)
+        buildings_by_class[building.class_name] = building
 
     items: list[Item] = []
     recipes: list[Recipe] = []
 
+    # Load normal items and recipes from game data
     for group in data:
         if not isinstance(group, dict):
             continue
@@ -294,12 +389,66 @@ def load_model(path: str):
                     )
                 )
 
+    # Add / override custom items
+    items_by_class: dict[str, Item] = {it.class_name: it for it in items}
+    for raw in custom_items:
+        item = make_item_from_custom(raw)
+        items_by_class[item.class_name] = item
+    items = list(items_by_class.values())
+
+    # Add / override custom recipes
+    recipes_by_class: dict[str, Recipe] = {rec.class_name: rec for rec in recipes}
+    for raw in custom_recipes:
+        recipe = make_recipe_from_custom(raw, buildings_by_class)
+        recipes_by_class[recipe.class_name] = recipe
+    recipes = list(recipes_by_class.values())
+
     recipes_by_product: dict[str, list[Recipe]] = {}
     for rec in recipes:
         for product_class, _amount in rec.products:
             recipes_by_product.setdefault(product_class, []).append(rec)
 
     return items, recipes, recipes_by_product, buildings_by_class
+
+
+def building_to_dict(building: Building) -> dict[str, str | float | int]:
+    """
+    Export only the most useful production fields for downstream recipe enrichment.
+    """
+    return {
+        "ClassName": building.class_name,
+        "mDisplayName": building.name,
+        "NativeClass": building.native_class,
+        "mPowerConsumption": building.power_consumption,
+        "mPowerConsumptionExponent": building.power_consumption_exponent,
+        "mProductionShardSlotSize": building.production_shard_slot_size,
+        "mProductionShardBoostMultiplier": building.production_shard_boost_multiplier,
+    }
+
+
+def recipe_to_dict(recipe: Recipe, include_building_details: bool = True) -> dict:
+    result = {
+        "ClassName": recipe.class_name,
+        "mDisplayName": recipe.name,
+        "mManufactoringDuration": recipe.duration_s,
+        "mIngredients": [
+            {"ItemClass": cls, "Amount": amt}
+            for cls, amt in recipe.ingredients
+        ],
+        "mProduct": [
+            {"ItemClass": cls, "Amount": amt}
+            for cls, amt in recipe.products
+        ],
+        "mProducedIn": list(recipe.produced_in),
+    }
+
+    if include_building_details:
+        result["mProducedInDetails"] = [
+            building_to_dict(building)
+            for building in recipe.produced_in_buildings
+        ]
+
+    return result
 
 
 def recipe_net_map(recipe: Recipe) -> dict[str, float]:
@@ -462,24 +611,142 @@ def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
     )
 
 
+# -------------------------------------------------------------------
+# CUSTOM CONTENT
+# -------------------------------------------------------------------
+# You can add your own items/buildings/recipes here.
+#
+# Recipe format:
+# {
+#     "ClassName": "Recipe_MyCustomRecipe_C",
+#     "mDisplayName": "My Custom Recipe",
+#     "mManufactoringDuration": 12.0,
+#     "mIngredients": [
+#         ("Desc_IronOre_C", 3),
+#         ("Desc_CopperOre_C", 1),
+#     ],
+#     "mProduct": [
+#         ("Desc_IronPlate_C", 2),
+#     ],
+#     "mProducedIn": [
+#         "Build_ConstructorMk1_C",
+#     ],
+# }
+#
+# Building format:
+# {
+#     "ClassName": "Build_MyCustomMachine_C",
+#     "mDisplayName": "My Custom Machine",
+#     "NativeClass": "/Script/CoreUObject.Class'/Script/FactoryGame.FGBuildableManufacturer'",
+#     "mPowerConsumption": 25.0,
+#     "mPowerConsumptionExponent": 1.0,
+#     "mProductionShardSlotSize": 2,
+#     "mProductionShardBoostMultiplier": 1.5,
+# }
+#
+# Item format:
+# {
+#     "ClassName": "Desc_MyItem_C",
+#     "mDisplayName": "My Item",
+#     "mResourceSinkPoints": 100,
+# }
+# -------------------------------------------------------------------
+
+CUSTOM_ITEMS = [
+]
+
+CUSTOM_BUILDINGS = [
+    {
+        "ClassName": "POWER",
+        "mDisplayName": "POWER",
+        "NativeClass": "/Script/CoreUObject.Class'/Script/FactoryGame.FGBuildableManufacturer'",
+        "mPowerConsumption": -2500.0,
+        "mPowerConsumptionExponent": 1.0,
+        "mProductionShardSlotSize": 0,
+        "mProductionShardBoostMultiplier": 1,
+    },
+]
+
+CUSTOM_RECIPES = [
+    {
+        "ClassName": "Recipe_NuclearWaste",
+        "mDisplayName": "Nuclear Waste",
+        "mManufactoringDuration": 300.0,
+        "mIngredients": [
+            ("Desc_NuclearFuelRod_C", 1.0),
+            ("Desc_Water_C", 240.0),
+        ],
+        "mProduct": [
+            ("Desc_NuclearWaste_C", 10.0),
+        ],
+        "mProducedIn": [
+            "POWER",
+        ],
+    },
+    {
+        "ClassName": "Recipe_PlutoniumWaste",
+        "mDisplayName": "Plutonium Waste",
+        "mManufactoringDuration": 600.0,
+        "mIngredients": [
+            ("Desc_PlutoniumFuelRod_C", 1.0),
+            ("Desc_Water_C", 240.0),
+        ],
+        "mProduct": [
+            ("Desc_PlutoniumWaste_C", 10.0),
+        ],
+        "mProducedIn": [
+            "POWER",
+        ],
+    },
+    {
+        "ClassName": "Recipe_FicsoniumWaste_C",
+        "mDisplayName": "Ficsonium Waste",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+            ("Desc_FicsoniumFuelRod_C", 1.0),
+            ("Desc_Water_C", 240.0),
+        ],
+        "mProduct": [
+        ],
+        "mProducedIn": [
+            "POWER",
+        ],
+    },
+]
+
+
 if __name__ == "__main__":
-    items, recipes, recipes_by_product, buildings_by_class = load_model("en-US.json")
+    items, recipes, recipes_by_product, buildings_by_class = load_model(
+        "en-US.json"
+    )
 
     print(f"Loaded {len(items)} items, {len(recipes)} recipes, {len(buildings_by_class)} buildings/components.")
     print()
 
     item_names = {it.class_name: it.name for it in items}
 
-    # Example: print one recipe with resolved building info
+    print("=== Example recipes ===")
     for rec in recipes[:5]:
         print(pretty_recipe(rec, item_names))
         print()
 
-    # Example: inspect a specific building by class name
+    print("=== Custom recipes ===")
+    for recipe_class in [r["ClassName"] for r in CUSTOM_RECIPES]:
+        rec = next((x for x in recipes if x.class_name == recipe_class), None)
+        if rec:
+            print(pretty_recipe(rec, item_names))
+            print()
+
     manufacturer = buildings_by_class.get("Build_ManufacturerMk1_C")
     if manufacturer:
         print("=== Manufacturer building info ===")
         print(manufacturer)
+        print()
+
+    custom_smelter = buildings_by_class.get("Build_CustomSmelter_C")
+    if custom_smelter:
+        print("=== Custom building info ===")
+        print(custom_smelter)
         print()
 
     zero_input = find_zero_input_recipes(recipes)

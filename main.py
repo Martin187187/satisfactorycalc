@@ -16,6 +16,7 @@ def format_buildings(buildings: tuple[Building, ...]) -> str:
     return ", ".join(
         (
             f"{b.name} ({b.class_name}, "
+            f"native={b.native_class}, "
             f"power={b.power_consumption:g}, "
             f"exp={b.power_consumption_exponent:g}, "
             f"shard_slots={b.production_shard_slot_size}, "
@@ -124,6 +125,7 @@ def print_lookup_examples(
         print("Example building lookup:")
         print(
             f"  {manufacturer.name} ({manufacturer.class_name}) -> "
+            f"native={manufacturer.native_class}, "
             f"power={manufacturer.power_consumption:g}, "
             f"exp={manufacturer.power_consumption_exponent:g}, "
             f"shard_slots={manufacturer.production_shard_slot_size}, "
@@ -142,6 +144,7 @@ def print_building(building_class: str, buildings_by_class: dict[str, Building])
 
     print(f"Name:                          {building.name}")
     print(f"ClassName:                     {building.class_name}")
+    print(f"NativeClass:                   {building.native_class}")
     print(f"mPowerConsumption:             {building.power_consumption:g}")
     print(f"mPowerConsumptionExponent:     {building.power_consumption_exponent:g}")
     print(f"mProductionShardSlotSize:      {building.production_shard_slot_size}")
