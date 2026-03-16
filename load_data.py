@@ -71,6 +71,7 @@ class Building:
     native_class: str
     power_consumption: float
     power_consumption_exponent: float
+    power_grid_multiplier: float
     production_shard_slot_size: int
     production_shard_boost_multiplier: float
 
@@ -244,6 +245,7 @@ def build_building_lookup(
             for key in (
                 "mPowerConsumption",
                 "mPowerConsumptionExponent",
+                "mPowerGridMultiplier",
                 "mProductionShardSlotSize",
                 "mProductionShardBoostMultiplier",
                 "mManufacturingSpeed",
@@ -259,6 +261,7 @@ def build_building_lookup(
             native_class=native_class_by_name.get(class_name, ""),
             power_consumption=to_float(raw.get("mPowerConsumption", "0")),
             power_consumption_exponent=to_float(raw.get("mPowerConsumptionExponent", "0")),
+            power_grid_multiplier=to_float(raw.get("mPowerGridMultiplier", 1.0), 1.0),
             production_shard_slot_size=to_int(raw.get("mProductionShardSlotSize", "0")),
             production_shard_boost_multiplier=to_float(raw.get("mProductionShardBoostMultiplier", "0")),
         )
@@ -276,6 +279,7 @@ def make_building_from_custom(raw: dict) -> Building:
         ),
         power_consumption=to_float(raw.get("mPowerConsumption", 0.0)),
         power_consumption_exponent=to_float(raw.get("mPowerConsumptionExponent", 1.0)),
+        power_grid_multiplier=to_float(raw.get("mPowerGridMultiplier", 1.0), 1.0),
         production_shard_slot_size=to_int(raw.get("mProductionShardSlotSize", 0)),
         production_shard_boost_multiplier=to_float(raw.get("mProductionShardBoostMultiplier", 1.0)),
     )
@@ -421,6 +425,7 @@ def building_to_dict(building: Building) -> dict[str, str | float | int]:
         "NativeClass": building.native_class,
         "mPowerConsumption": building.power_consumption,
         "mPowerConsumptionExponent": building.power_consumption_exponent,
+        "mPowerGridMultiplier": building.power_grid_multiplier,
         "mProductionShardSlotSize": building.production_shard_slot_size,
         "mProductionShardBoostMultiplier": building.production_shard_boost_multiplier,
     }
@@ -596,9 +601,14 @@ def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
         if not buildings:
             return "(unknown)"
         return ", ".join(
-            f"{b.name} [{b.class_name}, power={b.power_consumption:g}, "
-            f"exp={b.power_consumption_exponent:g}, shard_slots={b.production_shard_slot_size}, "
-            f"shard_boost={b.production_shard_boost_multiplier:g}]"
+            f"{b.name} ["
+            f"{b.class_name}, "
+            f"power={b.power_consumption:g}, "
+            f"exp={b.power_consumption_exponent:g}, "
+            f"grid_mult={b.power_grid_multiplier:g}, "
+            f"shard_slots={b.production_shard_slot_size}, "
+            f"shard_boost={b.production_shard_boost_multiplier:g}"
+            f"]"
             for b in buildings
         )
 
@@ -640,6 +650,7 @@ def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
 #     "NativeClass": "/Script/CoreUObject.Class'/Script/FactoryGame.FGBuildableManufacturer'",
 #     "mPowerConsumption": 25.0,
 #     "mPowerConsumptionExponent": 1.0,
+#     "mPowerGridMultiplier": 1.0,
 #     "mProductionShardSlotSize": 2,
 #     "mProductionShardBoostMultiplier": 1.5,
 # }
@@ -653,6 +664,21 @@ def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
 # -------------------------------------------------------------------
 
 CUSTOM_ITEMS = [
+    {
+        "ClassName": "IronOre_PatchImpure_C",
+        "mDisplayName": "Impure Iron Ore Patch",
+        "mResourceSinkPoints": 0,
+    },
+    {
+        "ClassName": "IronOre_PatchNormal_C",
+        "mDisplayName": "Normal Iron Ore Patch",
+        "mResourceSinkPoints": 0,
+    },
+    {
+        "ClassName": "IronOre_PatchPure_C",
+        "mDisplayName": "Pure Iron Ore Patch",
+        "mResourceSinkPoints": 0,
+    }
 ]
 
 CUSTOM_BUILDINGS = [
@@ -661,6 +687,17 @@ CUSTOM_BUILDINGS = [
         "mDisplayName": "POWER",
         "NativeClass": "/Script/CoreUObject.Class'/Script/FactoryGame.FGBuildableManufacturer'",
         "mPowerConsumption": -2500.0,
+        "mPowerConsumptionExponent": 1.0,
+        "mPowerGridMultiplier": 1.0,
+        "mProductionShardSlotSize": 0,
+        "mProductionShardBoostMultiplier": 1,
+    },
+    {
+        "ClassName": "AUG_POWER",
+        "mDisplayName": "AUG_POWER",
+        "NativeClass": "/Script/CoreUObject.Class'/Script/FactoryGame.AUGMENT_FactoryPower'",
+        "mPowerConsumption": -500.0,
+        "mPowerGridMultiplier": 1.3,
         "mPowerConsumptionExponent": 1.0,
         "mProductionShardSlotSize": 0,
         "mProductionShardBoostMultiplier": 1,
@@ -712,6 +749,74 @@ CUSTOM_RECIPES = [
             "POWER",
         ],
     },
+    {
+        "ClassName": "Recipe_PowerAugment_C",
+        "mDisplayName": "PowerAugment",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+            ("Desc_AlienPowerFuel_C", 5.0),
+        ],
+        "mProduct": [
+        ],
+        "mProducedIn": [
+            "AUG_POWER",
+        ],
+    },
+    {
+        "ClassName": "Recipe_WaterPump_C",
+        "mDisplayName": "Water Pump",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+        ],
+        "mProduct": [
+            ("Desc_Water_C", 120.0),
+        ],
+        "mProducedIn": [
+            "Build_WaterPump_C",
+        ],
+    },
+    {
+        "ClassName": "Recipe_IronOreImpure",
+        "mDisplayName": "Iron Ore Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+            ("IronOre_PatchImpure_C", 1), 
+        ],
+        "mProduct": [
+            ("Desc_OreIron_C", 120.0),
+        ],
+        "mProducedIn": [
+            "Build_MinerMk3_C",
+        ],
+    },
+    {
+        "ClassName": "Recipe_IronOreNormal",
+        "mDisplayName": "Iron Ore Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+            ("IronOre_PatchNormal_C", 1), 
+        ],
+        "mProduct": [
+            ("Desc_OreIron_C", 240.0),
+        ],
+        "mProducedIn": [
+            "Build_MinerMk3_C",
+        ],
+    },
+    {
+        "ClassName": "Recipe_IronOrePure",
+        "mDisplayName": "Iron Ore Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [
+            ("IronOre_PatchPure_C", 1), 
+        ],
+        "mProduct": [
+            ("Desc_OreIron_C", 480.0),
+        ],
+        "mProducedIn": [
+            "Build_MinerMk3_C",
+        ],
+    },
 ]
 
 
@@ -747,6 +852,12 @@ if __name__ == "__main__":
     if custom_smelter:
         print("=== Custom building info ===")
         print(custom_smelter)
+        print()
+
+    aug_power = buildings_by_class.get("AUG_POWER")
+    if aug_power:
+        print("=== AUG_POWER building info ===")
+        print(aug_power)
         print()
 
     zero_input = find_zero_input_recipes(recipes)
