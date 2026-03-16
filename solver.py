@@ -200,6 +200,46 @@ def is_augment_recipe(recipe: Recipe) -> bool:
     return cls == "AUG_POWER" or grid_mult > 1.0 + EPS
 
 
+def is_raw_resource_generator(recipe: Recipe) -> bool:
+    """
+    True for miners / extractors that generate raw materials from a fixed source.
+
+    For these buildings, overclocking should increase only product output,
+    while the "ingredient" that represents source occupancy (node / patch / well)
+    should stay constant.
+    """
+    building = pick_primary_building(recipe)
+    if building is None:
+        return False
+
+    cls = getattr(building, "class_name", "")
+    name = (getattr(building, "name", "") or "").lower()
+
+    raw_generator_classes = {
+        "Build_MinerMk1_C",
+        "Build_MinerMk2_C",
+        "Build_MinerMk3_C",
+        "Build_OilPump_C",
+        "Build_WaterPump_C",
+        "Build_FrackingExtractor_C",
+        "Build_GeneratorGeoThermal_C",
+    }
+
+    if cls in raw_generator_classes:
+        return True
+
+    # Fallback for data sets with slightly different names/classes
+    raw_keywords = (
+        "miner",
+        "oil extractor",
+        "water extractor",
+        "fracking extractor",
+        "resource well extractor",
+        "geothermal",
+    )
+    return any(k in name for k in raw_keywords)
+
+
 def infer_somersloop_slots(recipe: Recipe) -> int:
     building = pick_primary_building(recipe)
     if building is None:
@@ -261,12 +301,25 @@ def somersloop_power_multiplier(sloops_used: int, max_slots: int) -> float:
     return out_mult * out_mult
 
 
-def get_clock_options_for_recipe(recipe: Recipe) -> list[float]:
+def effective_shard_slot_size(recipe: Recipe) -> int:
+    """
+    Raw-resource producers should always be allowed to use up to 3 Power Shards,
+    even if the imported data reports fewer shard slots.
+    """
     building = pick_primary_building(recipe)
     if building is None:
-        return [1.0]
+        return 0
 
     shard_slots = int(getattr(building, "production_shard_slot_size", 0) or 0)
+
+    if is_raw_resource_generator(recipe):
+        return max(3, shard_slots)
+
+    return shard_slots
+
+
+def get_clock_options_for_recipe(recipe: Recipe) -> list[float]:
+    shard_slots = effective_shard_slot_size(recipe)
     if shard_slots <= 0:
         return [1.0]
 
@@ -325,7 +378,8 @@ def build_recipe_modes(recipes: list[Recipe]) -> tuple[list[RecipeMode], Recipe 
 
         max_sloops = 0 if is_power_generator_building(rec) else infer_somersloop_slots(rec)
         clock_options = get_clock_options_for_recipe(rec)
-        shard_slot_size = int(getattr(building, "production_shard_slot_size", 0) or 0)
+        shard_slot_size = effective_shard_slot_size(rec)
+        raw_generator = is_raw_resource_generator(rec)
 
         if not base_ing_rates and not base_prod_rates and abs(recipe_mode_power_mw(rec, 1.0, 0, max_sloops)) <= EPS:
             continue
@@ -343,9 +397,15 @@ def build_recipe_modes(recipes: list[Recipe]) -> tuple[list[RecipeMode], Recipe 
 
                 net: dict[str, float] = {}
 
-                # Ingredients scale with clock only
+                # Ingredients:
+                # - normal buildings: scale with clock
+                # - raw resource generators: their source occupancy stays constant
                 for cls, amt_per_min in base_ing_rates.items():
-                    scaled = -amt_per_min * clock
+                    if raw_generator:
+                        scaled = -amt_per_min
+                    else:
+                        scaled = -amt_per_min * clock
+
                     if abs(scaled) > EPS:
                         net[cls] = net.get(cls, 0.0) + scaled
 
@@ -814,6 +874,7 @@ def print_summary(
             print(f"{name} ({cls}): {pretty_amount(amt)}")
     print()
 
+
 def solve_result_to_dict(result: SolveResult) -> dict:
     return {
         "total_score": result.total_score,
@@ -835,6 +896,7 @@ def save_result_json(path: str | Path, result: SolveResult) -> None:
         json.dump(solve_result_to_dict(result), f, indent=2, sort_keys=True)
 
     print(f"Saved result to: {path}")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -876,23 +938,79 @@ def main() -> None:
     cli_supplies = parse_supply_args(args.supplies)
 
     default_base_supplies = {
+        # Iron
         "IronOre_PatchImpure_C": 39,
         "IronOre_PatchNormal_C": 42,
         "IronOre_PatchPure_C": 46,
-        "Desc_OreCopper_C": 36900,
-        "Desc_LiquidOil_C": 12600,
-        "Desc_NitrogenGas_C": 12000,
-        "Desc_Coal_C": 42300,
-        "Desc_Stone_C": 69300,
-        "Desc_OreGold_C": 15000,
-        "Desc_RawQuartz_C": 13500,
-        "Desc_Sulfur_C": 10800,
-        "Desc_OreBauxite_C": 12300,
-        "Desc_SAM_C": 10200,
-        "Desc_OreUranium_C": 2100,
-        POWER_ITEM: 0.0,
+
+        # Copper
+        "CopperOre_PatchImpure_C": 13,
+        "CopperOre_PatchNormal_C": 29,
+        "CopperOre_PatchPure_C": 13,
+
+        # Limestone
+        "Limestone_PatchImpure_C": 15,
+        "Limestone_PatchNormal_C": 50,
+        "Limestone_PatchPure_C": 29,
+
+        # Coal
+        "Coal_PatchImpure_C": 15,
+        "Coal_PatchNormal_C": 31,
+        "Coal_PatchPure_C": 16,
+
+        # Caterium
+        "CateriumOre_PatchImpure_C": 9,
+        "CateriumOre_PatchNormal_C": 8,
+        "CateriumOre_PatchPure_C": 0,
+
+        # Raw Quartz
+        "RawQuartz_PatchImpure_C": 3,
+        "RawQuartz_PatchNormal_C": 7,
+        "RawQuartz_PatchPure_C": 7,
+
+        # Sulfur
+        "Sulfur_PatchImpure_C": 6,
+        "Sulfur_PatchNormal_C": 5,
+        "Sulfur_PatchPure_C": 5,
+
+        # Bauxite
+        "Bauxite_PatchImpure_C": 5,
+        "Bauxite_PatchNormal_C": 6,
+        "Bauxite_PatchPure_C": 6,
+
+        # Uranium
+        "Uranium_PatchImpure_C": 3,
+        "Uranium_PatchNormal_C": 2,
+        "Uranium_PatchPure_C": 0,
+
+        # SAM
+        "SAM_PatchImpure_C": 10,
+        "SAM_PatchNormal_C": 6,
+        "SAM_PatchPure_C": 3,
+
+        # Crude Oil nodes
+        "CrudeOil_NodeImpure_C": 10,
+        "CrudeOil_NodeNormal_C": 12,
+        "CrudeOil_NodePure_C": 8,
+
+        # Crude Oil wells (satellite nodes)
+        "CrudeOil_WellImpure_C": 8,
+        "CrudeOil_WellNormal_C": 6,
+        "CrudeOil_WellPure_C": 4,
+
+        # Water wells (satellite nodes)
+        "Water_WellImpure_C": 7,
+        "Water_WellNormal_C": 12,
+        "Water_WellPure_C": 36,
+
+        # Nitrogen Gas wells (satellite nodes)
+        "NitrogenGas_WellImpure_C": 2,
+        "NitrogenGas_WellNormal_C": 7,
+        "NitrogenGas_WellPure_C": 36,
+
+        POWER_ITEM: 7970.0,
         POWERSHARD_ITEM: 2651,
-        SOMERSLOOP_ITEM: 105,
+        SOMERSLOOP_ITEM: 104,
     }
 
     if args.ignore_default_supplies:

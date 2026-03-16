@@ -664,21 +664,77 @@ def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
 # -------------------------------------------------------------------
 
 CUSTOM_ITEMS = [
-    {
-        "ClassName": "IronOre_PatchImpure_C",
-        "mDisplayName": "Impure Iron Ore Patch",
-        "mResourceSinkPoints": 0,
-    },
-    {
-        "ClassName": "IronOre_PatchNormal_C",
-        "mDisplayName": "Normal Iron Ore Patch",
-        "mResourceSinkPoints": 0,
-    },
-    {
-        "ClassName": "IronOre_PatchPure_C",
-        "mDisplayName": "Pure Iron Ore Patch",
-        "mResourceSinkPoints": 0,
-    }
+    
+    # Iron
+    {"ClassName": "IronOre_PatchImpure_C", "mDisplayName": "Impure Iron Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "IronOre_PatchNormal_C", "mDisplayName": "Normal Iron Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "IronOre_PatchPure_C", "mDisplayName": "Pure Iron Ore Patch", "mResourceSinkPoints": 0},
+
+    # Copper
+    {"ClassName": "CopperOre_PatchImpure_C", "mDisplayName": "Impure Copper Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "CopperOre_PatchNormal_C", "mDisplayName": "Normal Copper Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "CopperOre_PatchPure_C", "mDisplayName": "Pure Copper Ore Patch", "mResourceSinkPoints": 0},
+
+    # Limestone
+    {"ClassName": "Limestone_PatchImpure_C", "mDisplayName": "Impure Limestone Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Limestone_PatchNormal_C", "mDisplayName": "Normal Limestone Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Limestone_PatchPure_C", "mDisplayName": "Pure Limestone Patch", "mResourceSinkPoints": 0},
+
+    # Coal
+    {"ClassName": "Coal_PatchImpure_C", "mDisplayName": "Impure Coal Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Coal_PatchNormal_C", "mDisplayName": "Normal Coal Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Coal_PatchPure_C", "mDisplayName": "Pure Coal Patch", "mResourceSinkPoints": 0},
+
+    # Caterium
+    {"ClassName": "CateriumOre_PatchImpure_C", "mDisplayName": "Impure Caterium Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "CateriumOre_PatchNormal_C", "mDisplayName": "Normal Caterium Ore Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "CateriumOre_PatchPure_C", "mDisplayName": "Pure Caterium Ore Patch", "mResourceSinkPoints": 0},
+
+    # Raw Quartz
+    {"ClassName": "RawQuartz_PatchImpure_C", "mDisplayName": "Impure Raw Quartz Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "RawQuartz_PatchNormal_C", "mDisplayName": "Normal Raw Quartz Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "RawQuartz_PatchPure_C", "mDisplayName": "Pure Raw Quartz Patch", "mResourceSinkPoints": 0},
+
+    # Sulfur
+    {"ClassName": "Sulfur_PatchImpure_C", "mDisplayName": "Impure Sulfur Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Sulfur_PatchNormal_C", "mDisplayName": "Normal Sulfur Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Sulfur_PatchPure_C", "mDisplayName": "Pure Sulfur Patch", "mResourceSinkPoints": 0},
+
+    # Bauxite
+    {"ClassName": "Bauxite_PatchImpure_C", "mDisplayName": "Impure Bauxite Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Bauxite_PatchNormal_C", "mDisplayName": "Normal Bauxite Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Bauxite_PatchPure_C", "mDisplayName": "Pure Bauxite Patch", "mResourceSinkPoints": 0},
+
+    # Uranium
+    {"ClassName": "Uranium_PatchImpure_C", "mDisplayName": "Impure Uranium Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Uranium_PatchNormal_C", "mDisplayName": "Normal Uranium Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "Uranium_PatchPure_C", "mDisplayName": "Pure Uranium Patch", "mResourceSinkPoints": 0},
+
+    # SAM
+    {"ClassName": "SAM_PatchImpure_C", "mDisplayName": "Impure SAM Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "SAM_PatchNormal_C", "mDisplayName": "Normal SAM Patch", "mResourceSinkPoints": 0},
+    {"ClassName": "SAM_PatchPure_C", "mDisplayName": "Pure SAM Patch", "mResourceSinkPoints": 0},
+
+    # Crude Oil nodes
+    {"ClassName": "CrudeOil_NodeImpure_C", "mDisplayName": "Impure Crude Oil Node", "mResourceSinkPoints": 0},
+    {"ClassName": "CrudeOil_NodeNormal_C", "mDisplayName": "Normal Crude Oil Node", "mResourceSinkPoints": 0},
+    {"ClassName": "CrudeOil_NodePure_C", "mDisplayName": "Pure Crude Oil Node", "mResourceSinkPoints": 0},
+
+    # Crude Oil wells
+    {"ClassName": "CrudeOil_WellImpure_C", "mDisplayName": "Impure Crude Oil Well", "mResourceSinkPoints": 0},
+    {"ClassName": "CrudeOil_WellNormal_C", "mDisplayName": "Normal Crude Oil Well", "mResourceSinkPoints": 0},
+    {"ClassName": "CrudeOil_WellPure_C", "mDisplayName": "Pure Crude Oil Well", "mResourceSinkPoints": 0},
+
+    # Water wells
+    {"ClassName": "Water_WellImpure_C", "mDisplayName": "Impure Water Well", "mResourceSinkPoints": 0},
+    {"ClassName": "Water_WellNormal_C", "mDisplayName": "Normal Water Well", "mResourceSinkPoints": 0},
+    {"ClassName": "Water_WellPure_C", "mDisplayName": "Pure Water Well", "mResourceSinkPoints": 0},
+
+    # Nitrogen Gas wells
+    {"ClassName": "NitrogenGas_WellImpure_C", "mDisplayName": "Impure Nitrogen Gas Well", "mResourceSinkPoints": 0},
+    {"ClassName": "NitrogenGas_WellNormal_C", "mDisplayName": "Normal Nitrogen Gas Well", "mResourceSinkPoints": 0},
+    {"ClassName": "NitrogenGas_WellPure_C", "mDisplayName": "Pure Nitrogen Gas Well", "mResourceSinkPoints": 0},
+
 ]
 
 CUSTOM_BUILDINGS = [
@@ -775,47 +831,409 @@ CUSTOM_RECIPES = [
             "Build_WaterPump_C",
         ],
     },
+    
+    # --------------------
+    # WATER EXTRACTOR
+    # --------------------
+    {
+        "ClassName": "Recipe_WaterPump_C",
+        "mDisplayName": "Water Pump",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [],
+        "mProduct": [("Desc_Water_C", 120.0)],
+        "mProducedIn": ["Build_WaterPump_C"],
+    },
+
+    # --------------------
+    # IRON ORE
+    # --------------------
     {
         "ClassName": "Recipe_IronOreImpure",
         "mDisplayName": "Iron Ore Impure",
         "mManufactoringDuration": 60.0,
-        "mIngredients": [
-            ("IronOre_PatchImpure_C", 1), 
-        ],
-        "mProduct": [
-            ("Desc_OreIron_C", 120.0),
-        ],
-        "mProducedIn": [
-            "Build_MinerMk3_C",
-        ],
+        "mIngredients": [("IronOre_PatchImpure_C", 1)],
+        "mProduct": [("Desc_OreIron_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
     },
     {
         "ClassName": "Recipe_IronOreNormal",
         "mDisplayName": "Iron Ore Normal",
         "mManufactoringDuration": 60.0,
-        "mIngredients": [
-            ("IronOre_PatchNormal_C", 1), 
-        ],
-        "mProduct": [
-            ("Desc_OreIron_C", 240.0),
-        ],
-        "mProducedIn": [
-            "Build_MinerMk3_C",
-        ],
+        "mIngredients": [("IronOre_PatchNormal_C", 1)],
+        "mProduct": [("Desc_OreIron_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
     },
     {
         "ClassName": "Recipe_IronOrePure",
         "mDisplayName": "Iron Ore Pure",
         "mManufactoringDuration": 60.0,
-        "mIngredients": [
-            ("IronOre_PatchPure_C", 1), 
-        ],
-        "mProduct": [
-            ("Desc_OreIron_C", 480.0),
-        ],
-        "mProducedIn": [
-            "Build_MinerMk3_C",
-        ],
+        "mIngredients": [("IronOre_PatchPure_C", 1)],
+        "mProduct": [("Desc_OreIron_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # COPPER ORE
+    # --------------------
+    {
+        "ClassName": "Recipe_CopperOreImpure",
+        "mDisplayName": "Copper Ore Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CopperOre_PatchImpure_C", 1)],
+        "mProduct": [("Desc_OreCopper_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CopperOreNormal",
+        "mDisplayName": "Copper Ore Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CopperOre_PatchNormal_C", 1)],
+        "mProduct": [("Desc_OreCopper_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CopperOrePure",
+        "mDisplayName": "Copper Ore Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CopperOre_PatchPure_C", 1)],
+        "mProduct": [("Desc_OreCopper_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # LIMESTONE
+    # --------------------
+    {
+        "ClassName": "Recipe_LimestoneImpure",
+        "mDisplayName": "Limestone Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Limestone_PatchImpure_C", 1)],
+        "mProduct": [("Desc_Stone_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_LimestoneNormal",
+        "mDisplayName": "Limestone Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Limestone_PatchNormal_C", 1)],
+        "mProduct": [("Desc_Stone_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_LimestonePure",
+        "mDisplayName": "Limestone Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Limestone_PatchPure_C", 1)],
+        "mProduct": [("Desc_Stone_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # COAL
+    # --------------------
+    {
+        "ClassName": "Recipe_CoalImpure",
+        "mDisplayName": "Coal Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Coal_PatchImpure_C", 1)],
+        "mProduct": [("Desc_Coal_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CoalNormal",
+        "mDisplayName": "Coal Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Coal_PatchNormal_C", 1)],
+        "mProduct": [("Desc_Coal_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CoalPure",
+        "mDisplayName": "Coal Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Coal_PatchPure_C", 1)],
+        "mProduct": [("Desc_Coal_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # CATERIUM ORE
+    # --------------------
+    {
+        "ClassName": "Recipe_CateriumOreImpure",
+        "mDisplayName": "Caterium Ore Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CateriumOre_PatchImpure_C", 1)],
+        "mProduct": [("Desc_OreGold_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CateriumOreNormal",
+        "mDisplayName": "Caterium Ore Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CateriumOre_PatchNormal_C", 1)],
+        "mProduct": [("Desc_OreGold_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_CateriumOrePure",
+        "mDisplayName": "Caterium Ore Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CateriumOre_PatchPure_C", 1)],
+        "mProduct": [("Desc_OreGold_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # RAW QUARTZ
+    # --------------------
+    {
+        "ClassName": "Recipe_RawQuartzImpure",
+        "mDisplayName": "Raw Quartz Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("RawQuartz_PatchImpure_C", 1)],
+        "mProduct": [("Desc_RawQuartz_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_RawQuartzNormal",
+        "mDisplayName": "Raw Quartz Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("RawQuartz_PatchNormal_C", 1)],
+        "mProduct": [("Desc_RawQuartz_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_RawQuartzPure",
+        "mDisplayName": "Raw Quartz Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("RawQuartz_PatchPure_C", 1)],
+        "mProduct": [("Desc_RawQuartz_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # SULFUR
+    # --------------------
+    {
+        "ClassName": "Recipe_SulfurImpure",
+        "mDisplayName": "Sulfur Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Sulfur_PatchImpure_C", 1)],
+        "mProduct": [("Desc_Sulfur_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_SulfurNormal",
+        "mDisplayName": "Sulfur Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Sulfur_PatchNormal_C", 1)],
+        "mProduct": [("Desc_Sulfur_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_SulfurPure",
+        "mDisplayName": "Sulfur Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Sulfur_PatchPure_C", 1)],
+        "mProduct": [("Desc_Sulfur_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # BAUXITE
+    # --------------------
+    {
+        "ClassName": "Recipe_BauxiteImpure",
+        "mDisplayName": "Bauxite Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Bauxite_PatchImpure_C", 1)],
+        "mProduct": [("Desc_OreBauxite_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_BauxiteNormal",
+        "mDisplayName": "Bauxite Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Bauxite_PatchNormal_C", 1)],
+        "mProduct": [("Desc_OreBauxite_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_BauxitePure",
+        "mDisplayName": "Bauxite Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Bauxite_PatchPure_C", 1)],
+        "mProduct": [("Desc_OreBauxite_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # URANIUM
+    # --------------------
+    {
+        "ClassName": "Recipe_UraniumImpure",
+        "mDisplayName": "Uranium Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Uranium_PatchImpure_C", 1)],
+        "mProduct": [("Desc_OreUranium_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_UraniumNormal",
+        "mDisplayName": "Uranium Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Uranium_PatchNormal_C", 1)],
+        "mProduct": [("Desc_OreUranium_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_UraniumPure",
+        "mDisplayName": "Uranium Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Uranium_PatchPure_C", 1)],
+        "mProduct": [("Desc_OreUranium_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # SAM
+    # --------------------
+    {
+        "ClassName": "Recipe_SAMImpure",
+        "mDisplayName": "SAM Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("SAM_PatchImpure_C", 1)],
+        "mProduct": [("Desc_SAM_C", 120.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_SAMNormal",
+        "mDisplayName": "SAM Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("SAM_PatchNormal_C", 1)],
+        "mProduct": [("Desc_SAM_C", 240.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+    {
+        "ClassName": "Recipe_SAMPure",
+        "mDisplayName": "SAM Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("SAM_PatchPure_C", 1)],
+        "mProduct": [("Desc_SAM_C", 480.0)],
+        "mProducedIn": ["Build_MinerMk3_C"],
+    },
+
+    # --------------------
+    # CRUDE OIL NODES
+    # --------------------
+    {
+        "ClassName": "Recipe_CrudeOilNodeImpure",
+        "mDisplayName": "Crude Oil Node Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_NodeImpure_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 60.0)],
+        "mProducedIn": ["Build_OilPump_C"],
+    },
+    {
+        "ClassName": "Recipe_CrudeOilNodeNormal",
+        "mDisplayName": "Crude Oil Node Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_NodeNormal_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 120.0)],
+        "mProducedIn": ["Build_OilPump_C"],
+    },
+    {
+        "ClassName": "Recipe_CrudeOilNodePure",
+        "mDisplayName": "Crude Oil Node Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_NodePure_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 240.0)],
+        "mProducedIn": ["Build_OilPump_C"],
+    },
+
+    # --------------------
+    # CRUDE OIL WELLS
+    # --------------------
+    {
+        "ClassName": "Recipe_CrudeOilWellImpure",
+        "mDisplayName": "Crude Oil Well Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_WellImpure_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 30.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_CrudeOilWellNormal",
+        "mDisplayName": "Crude Oil Well Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_WellNormal_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 60.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_CrudeOilWellPure",
+        "mDisplayName": "Crude Oil Well Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("CrudeOil_WellPure_C", 1)],
+        "mProduct": [("Desc_LiquidOil_C", 120.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+
+    # --------------------
+    # WATER WELLS
+    # --------------------
+    {
+        "ClassName": "Recipe_WaterWellImpure",
+        "mDisplayName": "Water Well Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Water_WellImpure_C", 1)],
+        "mProduct": [("Desc_Water_C", 30.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_WaterWellNormal",
+        "mDisplayName": "Water Well Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Water_WellNormal_C", 1)],
+        "mProduct": [("Desc_Water_C", 60.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_WaterWellPure",
+        "mDisplayName": "Water Well Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("Water_WellPure_C", 1)],
+        "mProduct": [("Desc_Water_C", 120.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+
+    # --------------------
+    # NITROGEN GAS WELLS
+    # --------------------
+    {
+        "ClassName": "Recipe_NitrogenGasWellImpure",
+        "mDisplayName": "Nitrogen Gas Well Impure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("NitrogenGas_WellImpure_C", 1)],
+        "mProduct": [("Desc_NitrogenGas_C", 30.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_NitrogenGasWellNormal",
+        "mDisplayName": "Nitrogen Gas Well Normal",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("NitrogenGas_WellNormal_C", 1)],
+        "mProduct": [("Desc_NitrogenGas_C", 60.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
+    },
+    {
+        "ClassName": "Recipe_NitrogenGasWellPure",
+        "mDisplayName": "Nitrogen Gas Well Pure",
+        "mManufactoringDuration": 60.0,
+        "mIngredients": [("NitrogenGas_WellPure_C", 1)],
+        "mProduct": [("Desc_NitrogenGas_C", 120.0)],
+        "mProducedIn": ["Build_FrackingExtractor_C"],
     },
 ]
 
