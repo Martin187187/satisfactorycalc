@@ -1,11 +1,19 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 import re
 import orjson  # pip install orjson
 from scipy.optimize import linprog  # pip install scipy
 
+
 PAIR_RE = re.compile(
     r'ItemClass="[^"]*\.([A-Za-z0-9_]+_C)\'",Amount=([0-9]+)'
 )
+
+# Matches things like:
+# "/Game/FactoryGame/Buildable/Factory/ManufacturerMk1/Build_ManufacturerMk1.Build_ManufacturerMk1_C"
+# and extracts Build_ManufacturerMk1_C
+CLASS_REF_RE = re.compile(r'([A-Za-z0-9_]+_C)"?')
 
 RECIPE_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGRecipe'"
 ITEM_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGItemDescriptor'"
@@ -26,10 +34,9 @@ SINK_POINT_OVERRIDES = {
     "Desc_RocketFuel_C": 0,
     "Desc_IonizedFuel_C": 0,
     "Desc_DissolvedSilica_C": 0,
-    "Desc_DarkEnergy_C": 0,
-    "Desc_QuantumEnergy_C": 0,
     "Desc_LiquidTurboFuel_C": 0,
 }
+
 AMOUNT_DIVISORS = {
     "Desc_Water_C": 1000.0,
     "Desc_NitrogenGas_C": 1000.0,
@@ -49,6 +56,7 @@ AMOUNT_DIVISORS = {
     "Desc_LiquidTurboFuel_C": 1000.0,
 }
 
+
 @dataclass(frozen=True, slots=True)
 class Item:
     class_name: str
@@ -57,12 +65,25 @@ class Item:
 
 
 @dataclass(frozen=True, slots=True)
+class Building:
+    class_name: str
+    name: str
+    power_consumption: float
+    power_consumption_exponent: float
+    production_shard_slot_size: int
+    production_shard_boost_multiplier: float
+
+
+@dataclass(frozen=True, slots=True)
 class Recipe:
     class_name: str
+    name: str
     duration_s: float
-    ingredients: tuple[tuple[str, int], ...]
-    products: tuple[tuple[str, int], ...]
-    produced_in: tuple[str, ...]
+    ingredients: tuple[tuple[str, float], ...]   # (ClassName, amount)
+    products: tuple[tuple[str, float], ...]
+    produced_in: tuple[str, ...]                 # building class names only
+    produced_in_buildings: tuple[Building, ...]  # resolved building data
+
 
 @dataclass(frozen=True, slots=True)
 class SuspiciousCycleResult:
@@ -70,6 +91,11 @@ class SuspiciousCycleResult:
     objective_value: float
     recipe_usage: dict[str, float]
     sink_output: dict[str, float]
+
+
+def scale_amount(item_class: str, amount: float) -> float:
+    divisor = AMOUNT_DIVISORS.get(item_class, 1.0)
+    return amount / divisor
 
 
 def parse_item_list(s: str) -> tuple[tuple[str, float], ...]:
@@ -82,6 +108,47 @@ def parse_item_list(s: str) -> tuple[tuple[str, float], ...]:
         pairs.append((item_class, amount))
 
     return tuple(pairs)
+
+
+def parse_class_refs(s: str) -> tuple[str, ...]:
+    """
+    Parse strings like:
+      ("/Game/.../Build_ManufacturerMk1.Build_ManufacturerMk1_C",
+       "/Game/.../BP_WorkshopComponent.BP_WorkshopComponent_C")
+
+    and return:
+      ("Build_ManufacturerMk1_C", "BP_WorkshopComponent_C")
+    """
+    if not s:
+        return ()
+
+    found = CLASS_REF_RE.findall(s)
+    # preserve order, remove duplicates
+    seen = set()
+    result: list[str] = []
+    for cls in found:
+        if cls not in seen:
+            seen.add(cls)
+            result.append(cls)
+    return tuple(result)
+
+
+def to_float(value, default: float = 0.0) -> float:
+    if value is None or value == "":
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def to_int(value, default: int = 0) -> int:
+    if value is None or value == "":
+        return default
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
 
 
 def load_json_any_encoding(path: str):
@@ -101,13 +168,80 @@ def load_json_any_encoding(path: str):
     return orjson.loads(text)
 
 
+def extract_all_classes(data: list[dict]) -> dict[str, dict]:
+    """
+    Build a lookup of every class record by ClassName, regardless of NativeClass.
+    This is the important step that lets recipes resolve buildings from other sections.
+    """
+    all_classes_by_name: dict[str, dict] = {}
+
+    for group in data:
+        if not isinstance(group, dict):
+            continue
+
+        classes = group.get("Classes", [])
+        if not isinstance(classes, list):
+            continue
+
+        for cls in classes:
+            if not isinstance(cls, dict):
+                continue
+
+            class_name = cls.get("ClassName", "")
+            if not class_name:
+                continue
+
+            all_classes_by_name[class_name] = cls
+
+    return all_classes_by_name
+
+
+def build_building_lookup(all_classes_by_name: dict[str, dict]) -> dict[str, Building]:
+    """
+    Convert every class record that looks like a production-capable buildable/workbench
+    into a Building. We do not depend on a single NativeClass here.
+    """
+    buildings: dict[str, Building] = {}
+
+    for class_name, raw in all_classes_by_name.items():
+        # Only keep classes that appear to be usable crafting buildings/components.
+        # This heuristic is broad on purpose so workshop/workbench components are also picked up.
+        has_relevant_fields = any(
+            key in raw
+            for key in (
+                "mPowerConsumption",
+                "mPowerConsumptionExponent",
+                "mProductionShardSlotSize",
+                "mProductionShardBoostMultiplier",
+                "mManufacturingSpeed",
+            )
+        )
+
+        if not has_relevant_fields:
+            continue
+
+        buildings[class_name] = Building(
+            class_name=class_name,
+            name=raw.get("mDisplayName", class_name),
+            power_consumption=to_float(raw.get("mPowerConsumption", "0")),
+            power_consumption_exponent=to_float(raw.get("mPowerConsumptionExponent", "0")),
+            production_shard_slot_size=to_int(raw.get("mProductionShardSlotSize", "0")),
+            production_shard_boost_multiplier=to_float(raw.get("mProductionShardBoostMultiplier", "0")),
+        )
+
+    return buildings
+
+
 def load_model(path: str):
     data = load_json_any_encoding(path)
 
     if not isinstance(data, list):
         raise TypeError(f"Expected top-level JSON array, got {type(data).__name__}")
 
-    items_by_class: list[Item] = []
+    all_classes_by_name = extract_all_classes(data)
+    buildings_by_class = build_building_lookup(all_classes_by_name)
+
+    items: list[Item] = []
     recipes: list[Recipe] = []
 
     for group in data:
@@ -116,7 +250,6 @@ def load_model(path: str):
 
         native_class = group.get("NativeClass", "")
         classes = group.get("Classes", [])
-
         if not isinstance(classes, list):
             continue
 
@@ -129,10 +262,10 @@ def load_model(path: str):
                 continue
 
             if native_class == ITEM_NATIVE_CLASS:
-                sink_points = int(float(r.get("mResourceSinkPoints", "0") or 0))
+                sink_points = to_int(r.get("mResourceSinkPoints", "0"))
                 sink_points = SINK_POINT_OVERRIDES.get(cn, sink_points)
 
-                items_by_class.append(
+                items.append(
                     Item(
                         class_name=cn,
                         name=r.get("mDisplayName", cn),
@@ -141,12 +274,23 @@ def load_model(path: str):
                 )
 
             elif native_class == RECIPE_NATIVE_CLASS:
+                produced_in_classes = parse_class_refs(r.get("mProducedIn", ""))
+
+                resolved_buildings = tuple(
+                    buildings_by_class[bcls]
+                    for bcls in produced_in_classes
+                    if bcls in buildings_by_class
+                )
+
                 recipes.append(
                     Recipe(
                         class_name=cn,
-                        duration_s=float(r.get("mManufactoringDuration", "0") or 0),
+                        name=r.get("mDisplayName", cn),
+                        duration_s=to_float(r.get("mManufactoringDuration", "0")),
                         ingredients=parse_item_list(r.get("mIngredients", "")),
                         products=parse_item_list(r.get("mProduct", "")),
+                        produced_in=produced_in_classes,
+                        produced_in_buildings=resolved_buildings,
                     )
                 )
 
@@ -155,7 +299,7 @@ def load_model(path: str):
         for product_class, _amount in rec.products:
             recipes_by_product.setdefault(product_class, []).append(rec)
 
-    return items_by_class, recipes, recipes_by_product
+    return items, recipes, recipes_by_product, buildings_by_class
 
 
 def recipe_net_map(recipe: Recipe) -> dict[str, float]:
@@ -214,19 +358,6 @@ def detect_profitable_zero_input_cycle(
     recipes: list[Recipe],
     eps: float = 1e-9,
 ) -> SuspiciousCycleResult:
-    """
-    Detect whether there exists a nonzero nonnegative recipe combination that:
-      - requires no external base resources
-      - keeps all item balances nonnegative
-      - yields positive sink output
-
-    To avoid the trivial "scale to infinity" issue during detection,
-    we normalize with:
-        sum(recipe_runs) <= 1
-
-    If the optimum is still positive, then there exists a scalable profitable loop.
-    """
-
     items_by_class, item_classes = build_item_lookup(items, recipes)
 
     sinkable_items = [cls for cls in item_classes if items_by_class[cls].sink_points > 0]
@@ -237,7 +368,6 @@ def detect_profitable_zero_input_cycle(
     sink_idx = {cls: i for i, cls in enumerate(sinkable_items)}
     recipe_nets = [recipe_net_map(r) for r in recipes]
 
-    # maximize sink points => minimize negative sink points
     c = [0.0] * n_vars
     for cls, k in sink_idx.items():
         c[n_recipes + k] = -float(items_by_class[cls].sink_points)
@@ -245,9 +375,6 @@ def detect_profitable_zero_input_cycle(
     A_ub: list[list[float]] = []
     b_ub: list[float] = []
 
-    # Item balance constraints with zero base:
-    # net_from_recipes - sink >= 0
-    # => -net_from_recipes + sink <= 0
     for cls in item_classes:
         row = [0.0] * n_vars
 
@@ -263,8 +390,6 @@ def detect_profitable_zero_input_cycle(
         A_ub.append(row)
         b_ub.append(0.0)
 
-    # Normalization:
-    # sum(recipe_runs) <= 1
     norm_row = [0.0] * n_vars
     for j in range(n_recipes):
         norm_row[j] = 1.0
@@ -311,29 +436,51 @@ def detect_profitable_zero_input_cycle(
         sink_output=sink_output,
     )
 
-def scale_amount(item_class: str, amount: float) -> float:
-    divisor = AMOUNT_DIVISORS.get(item_class, 1.0)
-    return amount / divisor
 
 def pretty_recipe(recipe: Recipe, item_names: dict[str, str]) -> str:
-    def fmt_pairs(pairs: tuple[tuple[str, int], ...]) -> str:
+    def fmt_pairs(pairs: tuple[tuple[str, float], ...]) -> str:
         if not pairs:
             return "(none)"
-        return ", ".join(f"{amt}x {item_names.get(cls, cls)}" for cls, amt in pairs)
+        return ", ".join(f"{amt:g}x {item_names.get(cls, cls)}" for cls, amt in pairs)
+
+    def fmt_buildings(buildings: tuple[Building, ...]) -> str:
+        if not buildings:
+            return "(unknown)"
+        return ", ".join(
+            f"{b.name} [{b.class_name}, power={b.power_consumption:g}, "
+            f"exp={b.power_consumption_exponent:g}, shard_slots={b.production_shard_slot_size}, "
+            f"shard_boost={b.production_shard_boost_multiplier:g}]"
+            for b in buildings
+        )
 
     return (
-        f"{recipe.class_name}\n"
+        f"{recipe.name} ({recipe.class_name})\n"
         f"  ingredients: {fmt_pairs(recipe.ingredients)}\n"
         f"  products:    {fmt_pairs(recipe.products)}\n"
-        f"  duration_s:  {recipe.duration_s}"
+        f"  duration_s:  {recipe.duration_s:g}\n"
+        f"  produced_in: {fmt_buildings(recipe.produced_in_buildings)}"
     )
 
+
 if __name__ == "__main__":
-    items, recipes, recipes_by_product = load_model("en-US.json")
-    print(f"Loaded {len(items)} items and {len(recipes)} recipes.")
+    items, recipes, recipes_by_product, buildings_by_class = load_model("en-US.json")
+
+    print(f"Loaded {len(items)} items, {len(recipes)} recipes, {len(buildings_by_class)} buildings/components.")
     print()
 
     item_names = {it.class_name: it.name for it in items}
+
+    # Example: print one recipe with resolved building info
+    for rec in recipes[:5]:
+        print(pretty_recipe(rec, item_names))
+        print()
+
+    # Example: inspect a specific building by class name
+    manufacturer = buildings_by_class.get("Build_ManufacturerMk1_C")
+    if manufacturer:
+        print("=== Manufacturer building info ===")
+        print(manufacturer)
+        print()
 
     zero_input = find_zero_input_recipes(recipes)
     print(f"Zero-input recipes: {len(zero_input)}")
@@ -351,7 +498,7 @@ if __name__ == "__main__":
 
     print("=== Profitable zero-input cycle detection ===")
     print(f"Has profitable cycle: {cycle_result.has_profitable_cycle}")
-    print(f"Objective value: {cycle_result.objective_value}")
+    print(f"Objective value: {cycle_result.objective_value:g}")
     print()
 
     if cycle_result.has_profitable_cycle:

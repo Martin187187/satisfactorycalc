@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from typing import Iterable
 import math
 
 from scipy.optimize import linprog
@@ -18,6 +17,19 @@ class SolveResult:
     total_score: float
     recipe_runs: dict[str, float]
     sunk_items: dict[str, float]
+
+
+@dataclass(frozen=True, slots=True)
+class RecipeEnergyStat:
+    recipe_class: str
+    recipe_name: str
+    building_name: str
+    building_class: str
+    runs: float
+    power_mw: float
+    duration_s: float
+    energy_per_run_mj: float
+    total_energy_mj: float
 
 
 def parse_supply_args(values: list[str]) -> dict[str, float]:
@@ -61,7 +73,6 @@ def build_item_maps(items: list[Item], recipes: list[Recipe], base_supplies: dic
         for cls, _ in rec.products:
             all_item_classes.add(cls)
 
-    # For any item not present in item descriptors, create a placeholder with 0 sink points
     for cls in all_item_classes:
         if cls not in items_by_class:
             items_by_class[cls] = Item(
@@ -97,32 +108,18 @@ def solve_max_sink_score(
 ) -> SolveResult:
     items_by_class, item_classes = build_item_maps(items, recipes, base_supplies)
 
-    item_idx = {cls: i for i, cls in enumerate(item_classes)}
-    recipe_idx = {r.class_name: j for j, r in enumerate(recipes)}
-
     sinkable_items = [cls for cls in item_classes if items_by_class[cls].sink_points > 0]
     sink_idx = {cls: k for k, cls in enumerate(sinkable_items)}
 
-    n_items = len(item_classes)
     n_recipes = len(recipes)
     n_sink = len(sinkable_items)
     n_vars = n_recipes + n_sink
 
-    # Objective for scipy.linprog is minimization.
-    # We want maximize(sum sink_points_i * sink_i))
-    # => minimize(-sum sink_points_i * sink_i)
+    # scipy.linprog minimizes
     c = [0.0] * n_vars
     for cls, k in sink_idx.items():
         c[n_recipes + k] = -float(items_by_class[cls].sink_points)
 
-    # Constraints:
-    # For each item i:
-    #   sum_r net[i,r] * x_r + base[i] - sink_i >= 0
-    #
-    # Rearranged for linprog A_ub x <= b_ub:
-    #   -sum_r net[i,r] * x_r + sink_i <= base[i]
-    #
-    # So one inequality row per item.
     A_ub: list[list[float]] = []
     b_ub: list[float] = []
 
@@ -131,13 +128,11 @@ def solve_max_sink_score(
     for cls in item_classes:
         row = [0.0] * n_vars
 
-        # - net[i,r] * x_r
         for j, net in enumerate(recipe_nets):
             amt = net.get(cls, 0.0)
             if abs(amt) > EPS:
                 row[j] = -amt
 
-        # + sink_i
         sk = sink_idx.get(cls)
         if sk is not None:
             row[n_recipes + sk] = 1.0
@@ -220,6 +215,66 @@ def pretty_amount(x: float) -> str:
     return f"{x:.6f}".rstrip("0").rstrip(".")
 
 
+def pick_primary_building(recipe: Recipe):
+    """
+    Prefer real factory buildings over workshop/workbench helper components.
+    """
+    buildings = getattr(recipe, "produced_in_buildings", ()) or ()
+    if not buildings:
+        return None
+
+    for b in buildings:
+        if getattr(b, "class_name", "").startswith("Build_"):
+            return b
+
+    return buildings[0]
+
+
+def compute_recipe_energy_stats(
+    recipes: list[Recipe],
+    recipe_runs: dict[str, float],
+) -> list[RecipeEnergyStat]:
+    """
+    Batch-energy estimate:
+      energy_per_run_mj = building_power_mw * duration_s
+
+    Since 1 MW = 1 MJ/s, multiplying by seconds gives MJ.
+
+    This is meaningful for a finite batch LP.
+    """
+    recipe_by_class = {r.class_name: r for r in recipes}
+    stats: list[RecipeEnergyStat] = []
+
+    for recipe_class, runs in recipe_runs.items():
+        rec = recipe_by_class[recipe_class]
+        building = pick_primary_building(rec)
+
+        if building is None:
+            continue
+
+        power_mw = float(getattr(building, "power_consumption", 0.0) or 0.0)
+        duration_s = float(getattr(rec, "duration_s", 0.0) or 0.0)
+
+        energy_per_run_mj = power_mw * duration_s
+        total_energy_mj = energy_per_run_mj * runs
+
+        stats.append(
+            RecipeEnergyStat(
+                recipe_class=rec.class_name,
+                recipe_name=getattr(rec, "name", rec.class_name),
+                building_name=getattr(building, "name", getattr(building, "class_name", "Unknown")),
+                building_class=getattr(building, "class_name", "Unknown"),
+                runs=runs,
+                power_mw=power_mw,
+                duration_s=duration_s,
+                energy_per_run_mj=energy_per_run_mj,
+                total_energy_mj=total_energy_mj,
+            )
+        )
+
+    return stats
+
+
 def print_summary(
     items: list[Item],
     recipes: list[Recipe],
@@ -228,6 +283,7 @@ def print_summary(
     show_recipe_limit: int,
     show_sink_limit: int,
     show_leftover_limit: int,
+    show_power_limit: int,
 ) -> None:
     items_by_class = {it.class_name: it for it in items}
 
@@ -261,11 +317,46 @@ def print_summary(
     if result.recipe_runs:
         print(f"=== Recipe Usage (top {show_recipe_limit}) ===")
         recipe_sorted = sorted(result.recipe_runs.items(), key=lambda kv: (-kv[1], kv[0]))
+        recipe_by_class = {r.class_name: r for r in recipes}
+
         for recipe_class, runs in recipe_sorted[:show_recipe_limit]:
-            print(f"{recipe_class}: runs={pretty_amount(runs)}")
+            rec = recipe_by_class[recipe_class]
+            print(f"{getattr(rec, 'name', recipe_class)} ({recipe_class}): runs={pretty_amount(runs)}")
         print()
     else:
         print("No recipes were used.")
+        print()
+
+    energy_stats = compute_recipe_energy_stats(recipes, result.recipe_runs)
+
+    if energy_stats:
+        total_energy_mj = sum(x.total_energy_mj for x in energy_stats)
+        total_energy_mwh = total_energy_mj / 3600.0
+        total_nominal_power_mw = sum(x.power_mw for x in energy_stats if x.runs > 1e-7)
+
+        print("=== Power / Energy Summary ===")
+        print(f"Recipes with resolved building power: {len(energy_stats)}")
+        print(f"Total nominal machine power:         {total_nominal_power_mw:.3f} MW")
+        print(f"Total batch energy:                  {total_energy_mj:.3f} MJ")
+        print(f"Total batch energy:                  {total_energy_mwh:.6f} MWh")
+        print()
+
+        print(f"=== Recipe Energy Usage (top {show_power_limit}) ===")
+        energy_sorted = sorted(energy_stats, key=lambda x: (-x.total_energy_mj, x.recipe_class))
+        for s in energy_sorted[:show_power_limit]:
+            print(
+                f"{s.recipe_name} ({s.recipe_class})\n"
+                f"  building:        {s.building_name} ({s.building_class})\n"
+                f"  runs:            {pretty_amount(s.runs)}\n"
+                f"  power:           {s.power_mw:.3f} MW\n"
+                f"  duration/run:    {s.duration_s:.3f} s\n"
+                f"  energy/run:      {s.energy_per_run_mj:.3f} MJ\n"
+                f"  total energy:    {s.total_energy_mj:.3f} MJ"
+            )
+        print()
+    else:
+        print("=== Power / Energy Summary ===")
+        print("No recipe energy data could be derived from resolved building information.")
         print()
 
     leftovers = compute_leftovers(recipes, result.recipe_runs, base_supplies, result.sunk_items)
@@ -279,6 +370,7 @@ def print_summary(
             name = item.name if item else cls
             print(f"{name} ({cls}): leftover={pretty_amount(amt)}")
         print()
+
 
 def filter_valid_recipes_from_base(
     recipes: list[Recipe],
@@ -322,6 +414,8 @@ def filter_valid_recipes_from_base(
         remaining = next_remaining
 
     return valid_recipes
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Maximize Satisfactory sink score from base ingredients using LP."
@@ -353,11 +447,33 @@ def main() -> None:
         default=300,
         help="How many leftovers to print",
     )
+    parser.add_argument(
+        "--top-power",
+        type=int,
+        default=100,
+        help="How many recipe energy rows to print",
+    )
 
     args = parser.parse_args()
-    base_supplies = {"Desc_OreIron_C": 92100, "Desc_Water_C": 100000000, "Desc_OreCopper_C": 36900, "Desc_LiquidOil_C": 12600, "Desc_NitrogenGas_C": 12000, "Desc_Coal_C": 42300, "Desc_Stone_C": 69300, "Desc_OreGold_C": 15000, "Desc_RawQuartz_C": 13500, "Desc_Sulfur_C": 10800, "Desc_OreBauxite_C": 12300, "Desc_SAM_C": 10200, "Desc_OreUranium_C": 2100}
 
-    items, recipes, _recipes_by_product = load_model(args.json_path)
+    base_supplies = {
+        "Desc_OreIron_C": 92100,
+        "Desc_Water_C": 100000000,
+        "Desc_OreCopper_C": 36900,
+        "Desc_LiquidOil_C": 12600,
+        "Desc_NitrogenGas_C": 12000,
+        "Desc_Coal_C": 42300,
+        "Desc_Stone_C": 69300,
+        "Desc_OreGold_C": 15000,
+        "Desc_RawQuartz_C": 13500,
+        "Desc_Sulfur_C": 10800,
+        "Desc_OreBauxite_C": 12300,
+        "Desc_SAM_C": 10200,
+        "Desc_OreUranium_C": 2100,
+    }
+
+    # load_model now returns 4 values
+    items, recipes, _recipes_by_product, _buildings_by_class = load_model(args.json_path)
 
     filtered_recipes = filter_valid_recipes_from_base(
         recipes,
@@ -365,10 +481,10 @@ def main() -> None:
         exclude_zero_input=False,
     )
 
-    print(f"Loaded items:           {len(items)}")
-    print(f"Loaded recipes:         {len(recipes)}")
-    print(f"Reachable valid recipes:{len(filtered_recipes)}")
-    print(f"Base supplies:          {len(base_supplies)} item types")
+    print(f"Loaded items:            {len(items)}")
+    print(f"Loaded recipes:          {len(recipes)}")
+    print(f"Reachable valid recipes: {len(filtered_recipes)}")
+    print(f"Base supplies:           {len(base_supplies)} item types")
     print()
 
     if not base_supplies:
@@ -389,6 +505,7 @@ def main() -> None:
         show_recipe_limit=args.top_recipes,
         show_sink_limit=args.top_sinks,
         show_leftover_limit=args.top_leftovers,
+        show_power_limit=args.top_power,
     )
 
 
