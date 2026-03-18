@@ -157,7 +157,7 @@ def aggregate_recipe_flows(
 
 
 def flow_penwidth(flow: float) -> str:
-    width = 0.4 + min(2.0, math.log10(max(flow, 1.0)) * 0.6)
+    width = 0.4 + min(2.0, math.log10(max(flow, 1.0)) * 0.2)
     return f"{width:.2f}"
 
 
@@ -590,7 +590,7 @@ def main() -> None:
     parser.add_argument("--out-dot", default="factory_graph_clean.dot")
     parser.add_argument("--render", choices=["svg", "png"], default="")
     parser.add_argument("--include-special-items", action="store_true")
-    parser.add_argument("--min-edge-flow", type=float, default=50.0)
+    parser.add_argument("--min-edge-flow", type=float, default=0)
     parser.add_argument("--show-edge-labels", action="store_true")
 
     args = parser.parse_args()

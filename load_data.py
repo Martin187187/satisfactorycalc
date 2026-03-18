@@ -16,7 +16,9 @@ PAIR_RE = re.compile(
 CLASS_REF_RE = re.compile(r'([A-Za-z0-9_]+_C)"?')
 
 RECIPE_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGRecipe'"
+RESOURCE_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGResourceDescriptor'"
 ITEM_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGItemDescriptor'"
+NUCLEAR_FUEL_NATIVE_CLASS = "/Script/CoreUObject.Class'/Script/FactoryGame.FGItemDescriptorNuclearFuel'"
 
 SINK_POINT_OVERRIDES = {
     "Desc_DarkEnergy_C": 0,
@@ -360,6 +362,30 @@ def load_model(
             if not cn:
                 continue
 
+            if native_class == RESOURCE_NATIVE_CLASS:
+                print(cn)
+                sink_points = to_int(r.get("mResourceSinkPoints", "0"))
+                sink_points = SINK_POINT_OVERRIDES.get(cn, sink_points)
+
+                items.append(
+                    Item(
+                        class_name=cn,
+                        name=r.get("mDisplayName", cn),
+                        sink_points=sink_points,
+                    )
+                )
+            if native_class == NUCLEAR_FUEL_NATIVE_CLASS:
+                print(cn)
+                sink_points = to_int(r.get("mResourceSinkPoints", "0"))
+                sink_points = SINK_POINT_OVERRIDES.get(cn, sink_points)
+
+                items.append(
+                    Item(
+                        class_name=cn,
+                        name=r.get("mDisplayName", cn),
+                        sink_points=sink_points,
+                    )
+                )
             if native_class == ITEM_NATIVE_CLASS:
                 sink_points = to_int(r.get("mResourceSinkPoints", "0"))
                 sink_points = SINK_POINT_OVERRIDES.get(cn, sink_points)
@@ -734,6 +760,7 @@ CUSTOM_ITEMS = [
     {"ClassName": "NitrogenGas_WellImpure_C", "mDisplayName": "Impure Nitrogen Gas Well", "mResourceSinkPoints": 0},
     {"ClassName": "NitrogenGas_WellNormal_C", "mDisplayName": "Normal Nitrogen Gas Well", "mResourceSinkPoints": 0},
     {"ClassName": "NitrogenGas_WellPure_C", "mDisplayName": "Pure Nitrogen Gas Well", "mResourceSinkPoints": 0},
+
 
 ]
 

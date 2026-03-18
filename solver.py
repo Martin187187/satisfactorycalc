@@ -18,6 +18,16 @@ POWER_ITEM = "__POWER_MW__"
 POWERSHARD_ITEM = "__POWERSHARD__"
 SOMERSLOOP_ITEM = "__SOMERSLOOP__"
 
+# Leftovers for these items are not allowed.
+# The optimizer must ensure their final balance is exactly zero.
+FORBIDDEN_LEFTOVERS: set[str] = {
+    "Desc_PlutoniumWaste_C",
+    "Desc_NuclearWaste_C",
+    "Desc_PlutoniumPellet_C",
+    "Desc_PlutoniumCell_C",
+    "Desc_NonFissibleUranium_C"
+}
+
 # Satisfactory production-building overclock exponent
 PRODUCTION_POWER_EXPONENT = 1.3219280948873624
 
@@ -54,7 +64,7 @@ SOMERSLOOP_SLOT_OVERRIDES: dict[str, int] = {
     "POWER": 0,
     "AUG_POWER": 0,
 }
-
+AUGMENT_SOMERSLOOP_COST = 13
 
 @dataclass(frozen=True, slots=True)
 class RecipeMode:
@@ -544,7 +554,7 @@ def compute_leftovers(
         leftovers[SOMERSLOOP_ITEM] = leftovers.get(SOMERSLOOP_ITEM, 0.0) - float(mode.somersloops) * count
 
     if augment_count > 0:
-        leftovers[SOMERSLOOP_ITEM] = leftovers.get(SOMERSLOOP_ITEM, 0.0) - 3.0 * float(augment_count)
+        leftovers[SOMERSLOOP_ITEM] = leftovers.get(SOMERSLOOP_ITEM, 0.0) - AUGMENT_SOMERSLOOP_COST * float(augment_count)
 
     for cls, amt in sunk_items.items():
         leftovers[cls] = leftovers.get(cls, 0.0) - amt
@@ -553,7 +563,7 @@ def compute_leftovers(
     for k, v in leftovers.items():
         if abs(v) <= 1e-7:
             v = 0.0
-        if v > 1e-7 or k in {POWER_ITEM, POWERSHARD_ITEM, SOMERSLOOP_ITEM}:
+        if v > 1e-7 or k in {POWER_ITEM, POWERSHARD_ITEM, SOMERSLOOP_ITEM} or k in FORBIDDEN_LEFTOVERS:
             cleaned[k] = v
 
     return cleaned
@@ -566,8 +576,11 @@ def solve_for_fixed_augment_count(
     modes: list[RecipeMode],
     augment_recipe: Recipe | None,
     augment_count: int,
+    forbidden_leftovers: set[str] | None = None,
 ) -> SolveResult | None:
-    if 3.0 * augment_count > float(base_supplies.get(SOMERSLOOP_ITEM, 0.0)) + EPS:
+    forbidden_leftovers = forbidden_leftovers or set()
+
+    if AUGMENT_SOMERSLOOP_COST  * augment_count > float(base_supplies.get(SOMERSLOOP_ITEM, 0.0)) + EPS:
         return None
 
     items_by_class = build_item_lookup(items, recipes, base_supplies)
@@ -612,8 +625,23 @@ def solve_for_fixed_augment_count(
             row[n_modes + sk] = 1.0
 
         effective_supply = float(base_supplies.get(cls, 0.0)) + float(fixed_nets.get(cls, 0.0))
-        A_ub.append(row)
-        b_ub.append(effective_supply)
+
+        if cls in forbidden_leftovers:
+            # Enforce:
+            #   effective_supply + net_production - sunk == 0
+            #
+            # Current row already gives:
+            #   -net_production + sunk <= effective_supply
+            #
+            # Add the opposite inequality too, forcing equality.
+            A_ub.append(row)
+            b_ub.append(effective_supply)
+
+            A_ub.append([-v for v in row])
+            b_ub.append(-effective_supply)
+        else:
+            A_ub.append(row)
+            b_ub.append(effective_supply)
 
     # Global Power Shard budget
     row_ps = [0.0] * n_vars
@@ -629,7 +657,10 @@ def solve_for_fixed_augment_count(
         if mode.somersloops > 0:
             row_sl[j] = float(mode.somersloops)
     A_ub.append(row_sl)
-    b_ub.append(float(base_supplies.get(SOMERSLOOP_ITEM, 0.0)) - 3.0 * float(augment_count))
+    b_ub.append(
+        float(base_supplies.get(SOMERSLOOP_ITEM, 0.0))
+        - float(AUGMENT_SOMERSLOOP_COST) * float(augment_count)
+    )
 
     bounds = [(0.0, None)] * n_vars
 
@@ -704,11 +735,14 @@ def solve_max_sink_score(
     items: list[Item],
     recipes: list[Recipe],
     base_supplies: dict[str, float],
+    forbidden_leftovers: set[str] | None = None,
 ) -> SolveResult:
+    forbidden_leftovers = forbidden_leftovers or set()
+
     modes, augment_recipe = build_recipe_modes(recipes)
 
     max_sloops = int(math.floor(base_supplies.get(SOMERSLOOP_ITEM, 0.0)))
-    max_augments_by_sloops = max_sloops // 3 if augment_recipe is not None else 0
+    max_augments_by_sloops = max_sloops // AUGMENT_SOMERSLOOP_COST  if augment_recipe is not None else 0
 
     best: SolveResult | None = None
 
@@ -720,6 +754,7 @@ def solve_max_sink_score(
             modes=modes,
             augment_recipe=augment_recipe,
             augment_count=augment_count,
+            forbidden_leftovers=forbidden_leftovers,
         )
         if result is None:
             continue
@@ -959,9 +994,9 @@ def main() -> None:
         "Coal_PatchPure_C": 16,
 
         # Caterium
-        "CateriumOre_PatchImpure_C": 9,
-        "CateriumOre_PatchNormal_C": 8,
-        "CateriumOre_PatchPure_C": 0,
+        "CateriumOre_PatchImpure_C": 0,
+        "CateriumOre_PatchNormal_C": 9,
+        "CateriumOre_PatchPure_C": 8,
 
         # Raw Quartz
         "RawQuartz_PatchImpure_C": 3,
@@ -999,9 +1034,9 @@ def main() -> None:
         "CrudeOil_WellPure_C": 4,
 
         # Water wells (satellite nodes)
-        "Water_WellImpure_C": 7,
-        "Water_WellNormal_C": 12,
-        "Water_WellPure_C": 36,
+        #"Water_WellImpure_C": 7,
+        #"Water_WellNormal_C": 12,
+        #"Water_WellPure_C": 36,
 
         # Nitrogen Gas wells (satellite nodes)
         "NitrogenGas_WellImpure_C": 2,
@@ -1036,12 +1071,15 @@ def main() -> None:
     print(f"Power key:               {POWER_ITEM}")
     print(f"Power Shard key:         {POWERSHARD_ITEM}")
     print(f"Somersloop key:          {SOMERSLOOP_ITEM}")
+    if FORBIDDEN_LEFTOVERS:
+        print(f"Forbidden leftovers:     {', '.join(sorted(FORBIDDEN_LEFTOVERS))}")
     print()
 
     result = solve_max_sink_score(
         items=items,
         recipes=filtered_recipes,
         base_supplies=base_supplies,
+        forbidden_leftovers=FORBIDDEN_LEFTOVERS,
     )
     if args.output_json:
         save_result_json(args.output_json, result)
