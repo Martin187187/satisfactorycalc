@@ -1043,7 +1043,8 @@ def main() -> None:
         "NitrogenGas_WellNormal_C": 7,
         "NitrogenGas_WellPure_C": 36,
 
-        POWER_ITEM: 7970.0,
+        # POWER_ITEM: 7970.0,
+        POWER_ITEM: 3000.0, # i am a bit liniet on the power supply to be sure it is
         POWERSHARD_ITEM: 2651,
         SOMERSLOOP_ITEM: 104,
     }

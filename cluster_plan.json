@@ -1,0 +1,671 @@
+{
+  "augment_count": 0,
+  "cluster_count": 15,
+  "cluster_internal_item_movement_limit": 100000.0,
+  "clusters": {
+    "cluster_001": {
+      "estimated_export_movement": 31587.997293420383,
+      "estimated_import_movement": 178884.2667198068,
+      "estimated_internal_item_movement": 99766.7195578673,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_EncasedIndustrialBeam_C|clk=1.00|ps=0|sl=0/2": 365.9292861392696,
+        "Recipe_Alternate_HeatSink_1_C|clk=1.00|ps=0|sl=0/2": 38.17055076909988,
+        "Recipe_Alternate_IronIngot_Basic_C|clk=1.00|ps=0|sl=0/2": 175.1364733242871,
+        "Recipe_Alternate_ModularFrameHeavy_C|clk=1.00|ps=0|sl=0/4": 156.12982875275503,
+        "Recipe_Alternate_ModularFrame_C|clk=1.00|ps=0|sl=0/2": 40.42823006887079,
+        "Recipe_Alternate_Plastic_1_C|clk=1.00|ps=0|sl=0/2": 364.5466471772948,
+        "Recipe_Alternate_RecycledRubber_C|clk=1.00|ps=0|sl=0/2": 340.6276954264328,
+        "Recipe_Alternate_SteelPipe_Iron_C|clk=1.00|ps=0|sl=0/1": 958.3334642856313,
+        "Recipe_Alternate_WetConcrete_C|clk=1.00|ps=0|sl=0/2": 246.21299147359954,
+        "Recipe_LimestoneImpure|clk=1.00|ps=0|sl=0/0": 15.0,
+        "Recipe_PlutoniumCell_C|clk=1.00|ps=0|sl=0/2": 25.38715095096589,
+        "Recipe_PlutoniumFuelRod_C|clk=1.00|ps=0|sl=0/4": 16.924767300643925,
+        "Recipe_SingularityCell_C|clk=1.00|ps=0|sl=0/4": 28.282799119949082,
+        "Recipe_SpaceElevatorPart_1_C|clk=1.00|ps=0|sl=0/2": 141.41399559974542,
+        "Recipe_SpaceElevatorPart_4_C|clk=1.00|ps=0|sl=0/4": 141.41399559974542
+      },
+      "net_power_left_mw": -63873.40214809035,
+      "sunk_items": {
+        "Desc_PlutoniumFuelRod_C": 4.231191825160981
+      },
+      "total_power_consumed_mw": 63873.40214809035,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_002": {
+      "estimated_export_movement": 15800.369094858359,
+      "estimated_import_movement": 93739.19681343935,
+      "estimated_internal_item_movement": 98818.19710987952,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_CircuitBoard_1_C|clk=1.00|ps=0|sl=0/2": 466.6264837780673,
+        "Recipe_Alternate_Computer_2_C|clk=1.00|ps=0|sl=0/2": 221.0873702075509,
+        "Recipe_Alternate_Silica_C|clk=1.00|ps=0|sl=0/2": 127.15107195176897,
+        "Recipe_Alternate_Silica_Distilled_C|clk=1.00|ps=0|sl=0/2": 32.660067780705425,
+        "Recipe_Alternate_SteamedCopperSheet_C|clk=1.00|ps=0|sl=0/2": 699.318049331073,
+        "Recipe_Cable_C|clk=1.00|ps=0|sl=0/1": 1086.6131562910907,
+        "Recipe_RawQuartzNormal|clk=2.50|ps=3|sl=0/0": 7.0,
+        "Recipe_SpaceElevatorPart_3_C|clk=1.00|ps=0|sl=0/2": 651.9678937746544,
+        "Recipe_SpaceElevatorPart_5_C|clk=1.00|ps=0|sl=0/4": 325.9839468873272,
+        "Recipe_SpaceElevatorPart_7_C|clk=1.00|ps=0|sl=0/2": 217.32263125821814,
+        "Recipe_WaterPump_C|clk=1.00|ps=0|sl=0/0": 184.19010108545
+      },
+      "net_power_left_mw": -75708.44062123215,
+      "sunk_items": {
+        "Desc_SpaceElevatorPart_7_C": 162.9919734436636
+      },
+      "total_power_consumed_mw": 75708.44062123215,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_003": {
+      "estimated_export_movement": 90709.33951734242,
+      "estimated_import_movement": 76754.05651467438,
+      "estimated_internal_item_movement": 90709.33951734242,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_PureIronIngot_C|clk=1.00|ps=0|sl=0/2": 1395.5283002668066
+      },
+      "net_power_left_mw": -41865.849008004196,
+      "sunk_items": {},
+      "total_power_consumed_mw": 41865.849008004196,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_004": {
+      "estimated_export_movement": 78498.26306390991,
+      "estimated_import_movement": 67787.03708388394,
+      "estimated_internal_item_movement": 99009.42636873243,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_CoatedIronPlate_C|clk=1.00|ps=0|sl=0/2": 160.61160962875502,
+        "Recipe_Alternate_DarkMatter_Trap_C|clk=1.00|ps=0|sl=0/4": 66.94436424652666,
+        "Recipe_Alternate_PureIronIngot_C|clk=1.00|ps=0|sl=0/2": 1046.646225200105,
+        "Recipe_QuantumEnergy_C|clk=1.00|ps=0|sl=0/2": 45.99107230484408,
+        "Recipe_SpaceElevatorPart_11_C|clk=2.50|ps=3|sl=4/4": 22.62623929595927,
+        "Recipe_SpaceElevatorPart_12_C|clk=1.00|ps=0|sl=0/4": 4.364311643042711,
+        "Recipe_SuperpositionOscillator_C|clk=1.00|ps=0|sl=0/4": 39.61273142655636
+      },
+      "net_power_left_mw": -164573.79607616836,
+      "sunk_items": {
+        "Desc_SpaceElevatorPart_11_C": 113.13119647979634,
+        "Desc_SpaceElevatorPart_12_C": 17.457246572170845
+      },
+      "total_power_consumed_mw": 164573.79607616836,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_005": {
+      "estimated_export_movement": 43266.91936581959,
+      "estimated_import_movement": 57728.30628944393,
+      "estimated_internal_item_movement": 99268.44135508663,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_CrystalOscillator_C|clk=1.00|ps=0|sl=0/4": 377.45708918496945,
+        "Recipe_Alternate_PureCopperIngot_C|clk=1.00|ps=0|sl=0/2": 1933.940600949662,
+        "Recipe_Alternate_PureQuartzCrystal_C|clk=1.00|ps=0|sl=0/2": 41.49162390690217,
+        "Recipe_Alternate_Quartz_Purified_C|clk=1.00|ps=0|sl=0/2": 65.32013556141085,
+        "Recipe_CopperDust_C|clk=1.00|ps=0|sl=0/1": 113.13119647979633,
+        "Recipe_PressureConversionCube_C|clk=1.00|ps=0|sl=0/2": 56.56559823989817,
+        "Recipe_RawQuartzImpure|clk=2.50|ps=3|sl=0/0": 3.0,
+        "Recipe_RawQuartzPure|clk=2.50|ps=3|sl=0/0": 7.0,
+        "Recipe_SpaceElevatorPart_9_C|clk=1.00|ps=0|sl=0/4": 56.565598239898165
+      },
+      "net_power_left_mw": -134289.60446216512,
+      "sunk_items": {},
+      "total_power_consumed_mw": 134289.60446216512,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_006": {
+      "estimated_export_movement": 29850.14069687905,
+      "estimated_import_movement": 67601.31115442872,
+      "estimated_internal_item_movement": 91376.46083492498,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_ClassicBattery_C|clk=1.00|ps=0|sl=0/4": 82.64147803221636,
+        "Recipe_Alternate_ElectromagneticControlRod_1_C|clk=1.00|ps=0|sl=0/2": 2.4541235853010623,
+        "Recipe_Alternate_ReinforcedIronPlate_2_C|clk=1.00|ps=0|sl=0/2": 372.88290723913883,
+        "Recipe_Alternate_SuperStateComputer_C|clk=1.00|ps=0|sl=0/4": 103.30184754027044,
+        "Recipe_Alternate_Wire_1_C|clk=1.00|ps=0|sl=0/1": 3150.810529532262,
+        "Recipe_ElectromagneticControlRod_C|clk=1.00|ps=0|sl=0/2": 215.27357613712283,
+        "Recipe_Stator_C|clk=1.00|ps=0|sl=0/2": 633.4913145802748,
+        "Recipe_SulfurImpure|clk=2.50|ps=3|sl=0/0": 6.0,
+        "Recipe_SulfurNormal|clk=2.50|ps=3|sl=0/0": 5.0,
+        "Recipe_SulfurPure|clk=2.50|ps=3|sl=0/0": 5.0,
+        "Recipe_SulfuricAcid_C|clk=1.00|ps=0|sl=0/2": 16.208098520670227
+      },
+      "net_power_left_mw": -44095.47524340188,
+      "sunk_items": {},
+      "total_power_consumed_mw": 44095.47524340188,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_007": {
+      "estimated_export_movement": 65755.30996842202,
+      "estimated_import_movement": 63022.13745028491,
+      "estimated_internal_item_movement": 93281.94075884389,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_AILimiter_Plastic_C|clk=1.00|ps=0|sl=0/2": 196.10329334628864,
+        "Recipe_Alternate_HighSpeedConnector_C|clk=1.00|ps=0|sl=0/4": 3.2721647804014165,
+        "Recipe_Alternate_NuclearFuelRod_1_C|clk=1.00|ps=0|sl=0/4": 141.0397275053661,
+        "Recipe_Alternate_Quickwire_C|clk=1.00|ps=0|sl=0/2": 251.1759582257171,
+        "Recipe_Alternate_Screw_2_C|clk=1.00|ps=0|sl=0/1": 64.7303282608591,
+        "Recipe_Alternate_UraniumCell_1_C|clk=1.00|ps=0|sl=0/4": 141.0397275053661,
+        "Recipe_Alternate_Wire_1_C|clk=1.00|ps=0|sl=0/1": 2100.540353021508,
+        "Recipe_UraniumImpure|clk=2.50|ps=3|sl=0/0": 3.0,
+        "Recipe_UraniumNormal|clk=2.50|ps=3|sl=0/0": 2.0
+      },
+      "net_power_left_mw": -31820.103849733903,
+      "sunk_items": {},
+      "total_power_consumed_mw": 31820.103849733903,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_008": {
+      "estimated_export_movement": 58699.706288832094,
+      "estimated_import_movement": 18214.68618872338,
+      "estimated_internal_item_movement": 92589.92740857508,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_CateriumIngot_Leached_C|clk=1.00|ps=0|sl=0/2": 18.551113884128412,
+        "Recipe_Alternate_Computer_1_C|clk=1.00|ps=0|sl=0/4": 205.84386449401643,
+        "Recipe_Alternate_PureCateriumIngot_C|clk=1.00|ps=0|sl=0/2": 258.3166061297611,
+        "Recipe_Alternate_Quickwire_C|clk=1.00|ps=0|sl=0/2": 251.1759582257171,
+        "Recipe_Bauxite_Caterium_C|clk=1.00|ps=0|sl=0/2": 51.99094202095199,
+        "Recipe_CateriumOreNormal|clk=2.50|ps=3|sl=0/0": 9.0,
+        "Recipe_CateriumOrePure|clk=2.50|ps=3|sl=0/0": 8.0,
+        "Recipe_WaterPump_C|clk=1.00|ps=0|sl=0/0": 368.3802021709
+      },
+      "net_power_left_mw": -46329.10016217014,
+      "sunk_items": {},
+      "total_power_consumed_mw": 46329.10016217014,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_009": {
+      "estimated_export_movement": 68609.27077926262,
+      "estimated_import_movement": 1015.4860380384774,
+      "estimated_internal_item_movement": 90611.46827009972,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_NonFissileUranium_C|clk=1.00|ps=0|sl=0/2": 16.92476730064393,
+        "Recipe_NuclearWaste|clk=1.00|ps=0|sl=0/0": 423.1191825160982,
+        "Recipe_Plutonium_C|clk=1.00|ps=0|sl=0/4": 8.462383650321962,
+        "Recipe_WaterPump_C|clk=1.00|ps=0|sl=0/0": 736.7604043418
+      },
+      "net_power_left_mw": 1034388.8049618296,
+      "sunk_items": {},
+      "total_power_consumed_mw": 23409.151328416014,
+      "total_power_produced_mw": 1057797.9562902455
+    },
+    "cluster_010": {
+      "estimated_export_movement": 32683.93628382394,
+      "estimated_import_movement": 9665.06043739388,
+      "estimated_internal_item_movement": 87470.68469790189,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_DilutedFuel_C|clk=1.00|ps=0|sl=0/2": 233.67872567647888,
+        "Recipe_Alternate_HeavyOilResidue_C|clk=1.00|ps=0|sl=0/2": 420.0,
+        "Recipe_CrudeOilNodeImpure|clk=2.50|ps=3|sl=0/0": 10.0,
+        "Recipe_CrudeOilNodeNormal|clk=2.50|ps=3|sl=0/0": 12.0,
+        "Recipe_CrudeOilNodePure|clk=2.50|ps=3|sl=0/0": 8.0,
+        "Recipe_CrudeOilWellImpure|clk=2.50|ps=3|sl=0/0": 8.0,
+        "Recipe_CrudeOilWellNormal|clk=2.50|ps=3|sl=0/0": 6.0,
+        "Recipe_CrudeOilWellPure|clk=2.50|ps=3|sl=0/0": 4.0,
+        "Recipe_ResidualRubber_C|clk=1.00|ps=0|sl=0/2": 210.0,
+        "Recipe_WaterPump_C|clk=1.00|ps=0|sl=0/0": 184.19010108545004
+      },
+      "net_power_left_mw": -44139.00384750891,
+      "sunk_items": {},
+      "total_power_consumed_mw": 44139.00384750891,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_011": {
+      "estimated_export_movement": 82470.06581885746,
+      "estimated_import_movement": 42520.81870759314,
+      "estimated_internal_item_movement": 99998.26285307673,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_AlcladCasing_C|clk=1.00|ps=0|sl=0/2": 26.26858370444212,
+        "Recipe_Alternate_HeatFusedFrame_C|clk=1.00|ps=0|sl=0/2": 37.710398826598784,
+        "Recipe_AluminumSheet_C|clk=1.00|ps=0|sl=0/2": 204.04168369621314,
+        "Recipe_CopperOreNormal|clk=2.50|ps=3|sl=0/0": 29.0,
+        "Recipe_IronOrePure|clk=2.50|ps=3|sl=0/0": 46.0,
+        "Recipe_PureAluminumIngot_C|clk=1.00|ps=0|sl=0/1": 603.1844760827005,
+        "Recipe_RadioControlUnit_C|clk=1.00|ps=0|sl=0/4": 45.25247859191854
+      },
+      "net_power_left_mw": -22516.95708757104,
+      "sunk_items": {},
+      "total_power_consumed_mw": 22516.95708757104,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_012": {
+      "estimated_export_movement": 36436.360630524636,
+      "estimated_import_movement": 22166.354762415664,
+      "estimated_internal_item_movement": 93024.7524141805,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_BoltedFrame_C|clk=1.00|ps=0|sl=0/2": 231.17092025105643,
+        "Recipe_Alternate_CopperRotor_C|clk=1.00|ps=0|sl=0/2": 92.9524472221651,
+        "Recipe_Alternate_ElectricMotor_C|clk=1.00|ps=0|sl=0/2": 64.10767800521792,
+        "Recipe_Alternate_Screw_2_C|clk=1.00|ps=0|sl=0/1": 129.4606565217182,
+        "Recipe_Coal_Limestone_C|clk=1.00|ps=0|sl=0/2": 62.35503750824998,
+        "Recipe_CopperOrePure|clk=2.50|ps=3|sl=0/0": 13.0,
+        "Recipe_LimestonePure|clk=2.50|ps=3|sl=0/0": 28.0
+      },
+      "net_power_left_mw": -28125.11243792435,
+      "sunk_items": {},
+      "total_power_consumed_mw": 28125.11243792435,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_013": {
+      "estimated_export_movement": 59412.679009416344,
+      "estimated_import_movement": 13005.823576449173,
+      "estimated_internal_item_movement": 79484.4977085621,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_CoatedIronCanister_C|clk=1.00|ps=0|sl=0/2": 54.066516236905045,
+        "Recipe_Alternate_CoolingDevice_C|clk=1.00|ps=0|sl=0/2": 33.9393589439389,
+        "Recipe_Alternate_TurboBlendFuel_C|clk=1.00|ps=0|sl=0/2": 72.0886883158734,
+        "Recipe_Alternate_TurboPressureMotor_C|clk=1.00|ps=0|sl=0/4": 15.084159530639512,
+        "Recipe_GasTank_C|clk=1.00|ps=0|sl=0/1": 11.313119647979635,
+        "Recipe_IronOreImpure|clk=2.50|ps=3|sl=0/0": 39.0,
+        "Recipe_IronOreNormal|clk=2.50|ps=3|sl=0/0": 21.0,
+        "Recipe_LimestoneNormal|clk=2.50|ps=3|sl=0/0": 50.0,
+        "Recipe_NitricAcid_C|clk=1.00|ps=0|sl=0/2": 60.40408123207128,
+        "Recipe_NitrogenGasWellImpure|clk=2.50|ps=3|sl=0/0": 2.0,
+        "Recipe_NitrogenGasWellNormal|clk=2.50|ps=3|sl=0/0": 7.0,
+        "Recipe_NitrogenGasWellPure|clk=2.50|ps=3|sl=0/0": 36.0,
+        "Recipe_PackagedNitrogen_C|clk=1.00|ps=0|sl=0/0": 11.313119647979635,
+        "Recipe_PackagedTurboFuel_C|clk=1.00|ps=0|sl=0/0": 162.19954871071513,
+        "Recipe_SpaceElevatorPart_8_C|clk=1.00|ps=0|sl=0/4": 56.56559823989817
+      },
+      "net_power_left_mw": -35635.37499526726,
+      "sunk_items": {},
+      "total_power_consumed_mw": 35635.37499526726,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_014": {
+      "estimated_export_movement": 23399.189459580346,
+      "estimated_import_movement": 21544.979796185184,
+      "estimated_internal_item_movement": 92682.47911399715,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_Diamond_Turbo_C|clk=1.00|ps=0|sl=0/4": 81.09977435535757,
+        "Recipe_Alternate_EnrichedCoal_C|clk=1.00|ps=0|sl=0/2": 44.909595511018,
+        "Recipe_Alternate_FlexibleFramework_C|clk=1.00|ps=0|sl=0/4": 28.310820217661817,
+        "Recipe_Alternate_IngotSteel_2_C|clk=1.00|ps=0|sl=0/2": 449.09595511017994,
+        "Recipe_Alternate_SteelBeam_Molded_C|clk=1.00|ps=0|sl=0/2": 37.42466292584833,
+        "Recipe_BauxiteNormal|clk=2.50|ps=3|sl=0/0": 6.0,
+        "Recipe_CoalImpure|clk=2.50|ps=3|sl=0/0": 15.0,
+        "Recipe_CoalNormal|clk=2.50|ps=3|sl=0/0": 31.0,
+        "Recipe_CoalPure|clk=2.50|ps=3|sl=0/0": 16.0,
+        "Recipe_FicsiteIngot_AL_C|clk=1.00|ps=0|sl=0/2": 14.155410108830898,
+        "Recipe_FicsiteMesh_C|clk=1.00|ps=0|sl=0/1": 42.46623032649269,
+        "Recipe_IngotSAM_C|clk=1.00|ps=0|sl=0/1": 85.0,
+        "Recipe_IronOreNormal|clk=2.50|ps=3|sl=0/0": 21.0,
+        "Recipe_SAMImpure|clk=2.50|ps=3|sl=0/0": 10.0,
+        "Recipe_SAMNormal|clk=2.50|ps=3|sl=0/0": 6.0,
+        "Recipe_SAMPure|clk=2.50|ps=3|sl=0/0": 3.0,
+        "Recipe_SpaceElevatorPart_12_C|clk=2.50|ps=3|sl=2/4": 6.747521408081462,
+        "Recipe_SpaceElevatorPart_6_C|clk=1.00|ps=0|sl=0/2": 84.93246065298544,
+        "Recipe_TemporalProcessor_C|clk=1.00|ps=0|sl=0/4": 28.310820217661796,
+        "Recipe_TimeCrystal_C|clk=1.00|ps=0|sl=0/2": 405.49887177678784
+      },
+      "net_power_left_mw": -283281.3381091876,
+      "sunk_items": {
+        "Desc_SpaceElevatorPart_12_C": 101.21282112122192
+      },
+      "total_power_consumed_mw": 283281.3381091876,
+      "total_power_produced_mw": 0.0
+    },
+    "cluster_015": {
+      "estimated_export_movement": 39239.05723970333,
+      "estimated_import_movement": 22769.0829778916,
+      "estimated_internal_item_movement": 98719.38007991305,
+      "leftover_items": {},
+      "mode_usage": {
+        "Recipe_Alternate_ElectroAluminumScrap_C|clk=1.00|ps=0|sl=0/2": 120.6368952165401,
+        "Recipe_Alternate_SloppyAlumina_C|clk=1.00|ps=0|sl=0/2": 90.47767141240507,
+        "Recipe_BauxiteImpure|clk=2.50|ps=3|sl=0/0": 5.0,
+        "Recipe_BauxitePure|clk=2.50|ps=3|sl=0/0": 6.0,
+        "Recipe_Bauxite_Copper_C|clk=1.00|ps=0|sl=0/2": 43.83828325419484,
+        "Recipe_CopperOreImpure|clk=2.50|ps=3|sl=0/0": 13.0,
+        "Recipe_PetroleumCoke_C|clk=1.00|ps=0|sl=0/2": 73.83507666749638,
+        "Recipe_Uranium_Bauxite_C|clk=1.00|ps=0|sl=0/2": 11.883276563617937
+      },
+      "net_power_left_mw": -26105.246913404037,
+      "sunk_items": {},
+      "total_power_consumed_mw": 26105.246913404037,
+      "total_power_produced_mw": 0.0
+    }
+  },
+  "estimated_total_cross_cluster_movement": 756418.6045106525,
+  "global_leftover_items": {
+    "Desc_NonFissibleUranium_C": 0.0,
+    "Desc_NuclearWaste_C": 0.0,
+    "Desc_PlutoniumCell_C": 0.0,
+    "Desc_PlutoniumPellet_C": 0.0,
+    "__POWERSHARD__": 1044.8787178878777,
+    "__POWER_MW__": 0.0,
+    "__SOMERSLOOP__": 0.0
+  },
+  "global_sunk_items": {
+    "Desc_PlutoniumFuelRod_C": 4.231191825160981,
+    "Desc_SpaceElevatorPart_11_C": 113.13119647979634,
+    "Desc_SpaceElevatorPart_12_C": 118.67006769339277,
+    "Desc_SpaceElevatorPart_7_C": 162.9919734436636
+  },
+  "intercluster_transfers": {
+    "cluster_001->cluster_002": {
+      "Desc_ModularFrameHeavy_C": 325.9839468873272
+    },
+    "cluster_001->cluster_004": {
+      "Desc_Plastic_C": 1204.5870722156396,
+      "Desc_SingularityCell_C": 282.82799119949084
+    },
+    "cluster_001->cluster_005": {
+      "Desc_Rubber_C": 4954.124295552724
+    },
+    "cluster_001->cluster_006": {
+      "Desc_Plastic_C": 4958.488681932981,
+      "Desc_SteelPipe_C": 9502.369718704122
+    },
+    "cluster_001->cluster_007": {
+      "Desc_Plastic_C": 5490.892213696082
+    },
+    "cluster_001->cluster_008": {
+      "Desc_Rubber_C": 1280.811557645222
+    },
+    "cluster_001->cluster_011": {
+      "Desc_ModularFrameHeavy_C": 113.13119647979636
+    },
+    "cluster_001->cluster_013": {
+      "Desc_AluminumPlateReinforced_C": 339.39358943938896,
+      "Desc_SpaceElevatorPart_4_C": 141.41399559974542
+    },
+    "cluster_001->cluster_014": {
+      "Desc_Cement_C": 2993.973034067866
+    },
+    "cluster_002->cluster_005": {
+      "Desc_RawQuartz_C": 1339.1008810851981
+    },
+    "cluster_002->cluster_006": {
+      "Desc_Water_C": 810.4049260334916
+    },
+    "cluster_002->cluster_007": {
+      "Desc_CircuitBoard_C": 9.81649434120425,
+      "Desc_Silica_C": 2238.3020918455445
+    },
+    "cluster_002->cluster_008": {
+      "Desc_CircuitBoard_C": 3087.6579674102463
+    },
+    "cluster_002->cluster_009": {
+      "Desc_Silica_C": 423.1191825159399
+    },
+    "cluster_002->cluster_011": {
+      "Desc_Computer_C": 84.99000691718184
+    },
+    "cluster_002->cluster_012": {
+      "Desc_CopperSheet_C": 2091.430062498715
+    },
+    "cluster_002->cluster_013": {
+      "Desc_CopperSheet_C": 810.9977435535757,
+      "Desc_Water_C": 1812.1224369621384
+    },
+    "cluster_002->cluster_015": {
+      "Desc_Water_C": 3092.427301695121
+    },
+    "cluster_003->cluster_001": {
+      "Desc_IronIngot_C": 87076.52276234877
+    },
+    "cluster_003->cluster_006": {
+      "Desc_IronIngot_C": 3632.816754993648
+    },
+    "cluster_004->cluster_001": {
+      "Desc_DarkMatter_C": 565.6559823989817,
+      "Desc_IronPlate_C": 2828.279911994908
+    },
+    "cluster_004->cluster_006": {
+      "Desc_IronIngot_C": 35752.314864159634,
+      "Desc_IronPlate_C": 6991.554510733853
+    },
+    "cluster_004->cluster_007": {
+      "Desc_IronIngot_C": 26256.754412768852
+    },
+    "cluster_004->cluster_013": {
+      "Desc_IronPlate_C": 2226.036299427864
+    },
+    "cluster_004->cluster_014": {
+      "Desc_QuantumEnergy_C": 3810.1918683450003,
+      "Desc_QuantumOscillator_C": 67.4752140808146
+    },
+    "cluster_005->cluster_001": {
+      "Desc_SpaceElevatorPart_9_C": 28.282799119949082
+    },
+    "cluster_005->cluster_002": {
+      "Desc_CopperIngot_C": 15734.656109949143,
+      "Desc_CrystalOscillator_C": 368.4789503459182,
+      "Desc_DissolvedSilica_C": 3919.208133684651
+    },
+    "cluster_005->cluster_004": {
+      "Desc_CrystalOscillator_C": 198.0636571327818
+    },
+    "cluster_005->cluster_007": {
+      "Desc_CopperIngot_C": 9419.09843346439,
+      "Desc_CrystalOscillator_C": 84.62383650321966
+    },
+    "cluster_005->cluster_008": {
+      "Desc_CopperIngot_C": 9419.09843346439
+    },
+    "cluster_005->cluster_011": {
+      "Desc_CopperIngot_C": 4010.5606147952903,
+      "Desc_CrystalOscillator_C": 56.56559823989802
+    },
+    "cluster_005->cluster_013": {
+      "Desc_PressureConversionCube_C": 28.282799119949086
+    },
+    "cluster_006->cluster_001": {
+      "Desc_ElectromagneticControlRod_C": 25.38715095096589,
+      "Desc_IronPlateReinforced_C": 363.6844513372324
+    },
+    "cluster_006->cluster_002": {
+      "Desc_ComputerSuper_C": 162.9919734436636,
+      "Desc_Stator_C": 1629.919734436636,
+      "Desc_Wire_C": 17934.631434481504
+    },
+    "cluster_006->cluster_007": {
+      "Desc_ElectromagneticControlRod_C": 282.0794550107322,
+      "Desc_Sulfur_C": 3525.9931876341525
+    },
+    "cluster_006->cluster_008": {
+      "Desc_SulfuricAcid_C": 556.5334165238523
+    },
+    "cluster_006->cluster_009": {
+      "Desc_SulfuricAcid_C": 253.87150950965892
+    },
+    "cluster_006->cluster_012": {
+      "Desc_ElectromagneticControlRod_C": 240.4037925195672,
+      "Desc_IronPlateReinforced_C": 1733.7819018829232
+    },
+    "cluster_006->cluster_013": {
+      "Desc_Stator_C": 226.2623929595925,
+      "Desc_Sulfur_C": 1621.9954871071513
+    },
+    "cluster_006->cluster_014": {
+      "Desc_ComputerSuper_C": 84.93246065298538,
+      "Desc_ElectromagneticControlRod_C": 84.93246065298544,
+      "Desc_Sulfur_C": 1122.7398877754486
+    },
+    "cluster_007->cluster_002": {
+      "Desc_Wire_C": 47262.15794298393
+    },
+    "cluster_007->cluster_005": {
+      "Desc_CircuitBoardHighSpeed_C": 707.7320422218177
+    },
+    "cluster_007->cluster_006": {
+      "Desc_CircuitBoardHighSpeed_C": 861.0943045484913,
+      "Desc_HighSpeedConnector_C": 9.81649434120425
+    },
+    "cluster_007->cluster_009": {
+      "Desc_NuclearFuelRod_C": 84.62383650321965
+    },
+    "cluster_007->cluster_012": {
+      "Desc_IronScrew_C": 16829.885347823365
+    },
+    "cluster_008->cluster_004": {
+      "Desc_Water_C": 5109.390386945226
+    },
+    "cluster_008->cluster_005": {
+      "Desc_Water_C": 20895.34190600545
+    },
+    "cluster_008->cluster_006": {
+      "Desc_Computer_C": 743.7733022899471
+    },
+    "cluster_008->cluster_007": {
+      "Desc_GoldIngot_C": 1883.8196866928781,
+      "Desc_HighSpeedWire_C": 11799.033354378678
+    },
+    "cluster_008->cluster_010": {
+      "Desc_Water_C": 9665.06043739388
+    },
+    "cluster_008->cluster_011": {
+      "Desc_Computer_C": 28.1411895626145
+    },
+    "cluster_008->cluster_015": {
+      "Desc_OreBauxite_C": 6238.913042514239,
+      "Desc_Water_C": 2336.2329830491835
+    },
+    "cluster_009->cluster_001": {
+      "Desc_PlutoniumPellet_C": 253.87150950965886,
+      "Desc_Water_C": 24621.299147359954
+    },
+    "cluster_009->cluster_003": {
+      "Desc_Water_C": 27910.566005336135
+    },
+    "cluster_009->cluster_004": {
+      "Desc_Water_C": 15823.534117056872
+    },
+    "cluster_010->cluster_001": {
+      "Desc_LiquidFuel_C": 21155.230278111827
+    },
+    "cluster_010->cluster_008": {
+      "Desc_Rubber_C": 3350.6753934701474
+    },
+    "cluster_010->cluster_011": {
+      "Desc_LiquidFuel_C": 1131.3119647979636
+    },
+    "cluster_010->cluster_013": {
+      "Desc_HeavyOilResidue_C": 2162.660649476202,
+      "Desc_LiquidFuel_C": 1081.3303247380957
+    },
+    "cluster_010->cluster_014": {
+      "Desc_Rubber_C": 849.3246065298526
+    },
+    "cluster_010->cluster_015": {
+      "Desc_HeavyOilResidue_C": 2953.403066699855
+    },
+    "cluster_011->cluster_001": {
+      "Desc_AluminumCasing_C": 1145.1165230729964
+    },
+    "cluster_011->cluster_003": {
+      "Desc_OreIron_C": 48843.49050933824
+    },
+    "cluster_011->cluster_004": {
+      "Desc_AluminumPlate_C": 1782.572914195036,
+      "Desc_OreIron_C": 6356.50949066176
+    },
+    "cluster_011->cluster_005": {
+      "Desc_ModularFrameFused_C": 56.56559823989817,
+      "Desc_ModularFrameLightweight_C": 113.13119647979634,
+      "Desc_OreCopper_C": 17400.0
+    },
+    "cluster_011->cluster_006": {
+      "Desc_AluminumPlate_C": 4338.677596691358
+    },
+    "cluster_011->cluster_013": {
+      "Desc_AluminumIngot_C": 678.7871788787772,
+      "Desc_ModularFrameFused_C": 56.56559823989817
+    },
+    "cluster_011->cluster_014": {
+      "Desc_AluminumIngot_C": 1698.6492130597078
+    },
+    "cluster_012->cluster_001": {
+      "Desc_ModularFrame_C": 1049.6890254390503,
+      "Desc_Motor_C": 282.82799119949084,
+      "Desc_Rotor_C": 282.82799119949084,
+      "Desc_Stone_C": 4751.017909803428
+    },
+    "cluster_012->cluster_002": {
+      "Desc_Stone_C": 6401.168587226581
+    },
+    "cluster_012->cluster_005": {
+      "Desc_OreCopper_C": 11609.109014244928
+    },
+    "cluster_012->cluster_007": {
+      "Desc_Rotor_C": 282.0794550107322
+    },
+    "cluster_012->cluster_013": {
+      "Desc_Motor_C": 197.97959383964354
+    },
+    "cluster_012->cluster_014": {
+      "Desc_Coal_C": 7482.60450098999,
+      "Desc_ModularFrame_C": 106.16557581623181
+    },
+    "cluster_012->cluster_015": {
+      "Desc_OreCopper_C": 3990.8909857550716
+    },
+    "cluster_013->cluster_001": {
+      "Desc_Stone_C": 30000.0
+    },
+    "cluster_013->cluster_004": {
+      "Desc_OreIron_C": 24300.0,
+      "Desc_SpaceElevatorPart_8_C": 56.56559823989817
+    },
+    "cluster_013->cluster_005": {
+      "Desc_NitricAcid_C": 653.2013556141085
+    },
+    "cluster_013->cluster_009": {
+      "Desc_NitricAcid_C": 253.87150950965892
+    },
+    "cluster_013->cluster_011": {
+      "Desc_NitricAcid_C": 905.0495718383709
+    },
+    "cluster_013->cluster_014": {
+      "Desc_TurboFuel_C": 3243.9909742143027
+    },
+    "cluster_014->cluster_001": {
+      "Desc_OreIron_C": 4378.411833107178,
+      "Desc_SteelPlate_C": 76.16145285289758
+    },
+    "cluster_014->cluster_004": {
+      "Desc_DarkEnergy_C": 4653.632044355183,
+      "Desc_OreIron_C": 5976.108391341913,
+      "Desc_SpaceElevatorPart_6_C": 17.457246572170817,
+      "Desc_TemporalProcessor_C": 17.45724657217076,
+      "Desc_TimeCrystal_C": 2008.3309273957998
+    },
+    "cluster_014->cluster_007": {
+      "Desc_SteelPlate_C": 323.6516413042955
+    },
+    "cluster_014->cluster_008": {
+      "Desc_SAMIngot_C": 519.9094202095184
+    },
+    "cluster_014->cluster_012": {
+      "Desc_SAMIngot_C": 623.5503750824998,
+      "Desc_SteelPlate_C": 647.303282608591
+    },
+    "cluster_014->cluster_015": {
+      "Desc_OreBauxite_C": 3600.0,
+      "Desc_SAMIngot_C": 557.2155981781277
+    },
+    "cluster_015->cluster_007": {
+      "Desc_OreUranium_C": 1425.9931876341525
+    },
+    "cluster_015->cluster_011": {
+      "Desc_AluminumScrap_C": 36191.06856496203
+    },
+    "cluster_015->cluster_013": {
+      "Desc_PetroleumCoke_C": 1621.9954871071513
+    }
+  },
+  "net_power_left_mw": 0.0,
+  "total_power_consumed_mw": 1065767.9562902448,
+  "total_power_produced_mw": 1057797.9562902455,
+  "total_score": 480648827.12342954
+}
