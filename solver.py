@@ -986,7 +986,7 @@ def main() -> None:
         # Limestone
         "Limestone_PatchImpure_C": 15,
         "Limestone_PatchNormal_C": 50,
-        "Limestone_PatchPure_C": 29,
+        "Limestone_PatchPure_C": 28,
 
         # Coal
         "Coal_PatchImpure_C": 15,
